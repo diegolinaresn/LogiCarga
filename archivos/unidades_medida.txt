@@ -1,0 +1,219 @@
+AH	AH	Ancheta
+BAR	BAR	bar
+BJ	BJ	Bandeja
+BM	BM	Bombonera
+BR	BR	Barra
+BRX	BRX	Brix
+BS	BS	Bolsa
+BT	BT	Botella
+BTP	BTP	Botella Pet
+BU	BU	Bulto
+CA	CA	Caja
+CAM	CAM	Cordon Azucar por minuto
+CAR	CAR	Cartón
+CD	CD	Candela
+CF	CF	Cofre
+CI	CI	Cilindro
+CJ	CJ	Caja
+CL	CL	Centilitro
+CM	CM	Centímetros
+CM/	CM/	Consistencia
+CP	CP	Cpack
+CTO	CTO	"Cuarto galón, EE.UU., líquido"
+DIS	DIS	Display
+DP	DP	DoyPack
+EML	EML	Unidades enzimas/Milímetro
+EST	EST	Estuche
+FAJ	FAJ	FAJOS
+FIL	FIL	Filas
+FR	FR	Frasco
+GF	GF	Garrafa
+GRD	GRD	Grande
+HA	HA	Hectárea
+HP	HP	Caballos de fuerza
+HPA	HPA	Hectopascal
+INH	INH	Pulg. Mercurio
+KMK	KMK	Metro cúbico/Metro cúbico
+LAT	LAT	Lata
+LB	LB	Libra (pound)
+LB1	LB1	Libra Inglesa
+LBH	LBH	Libras por Hora
+LCK	LCK	Litro por 100 km
+LMI	LMI	Litro/Minuto
+LMS	LMS	Litro/Molécula-segundo
+LPA	LPA	libras de presion absolutas
+LPH	LPH	Litro por hora
+LT	LT	Litro
+LTR	LTR	Litro para Helados
+M-P	M-P	Milésimas de Pulgada
+M/H	M/H	Metro/Hora
+M/L	M/L	Mol por litro
+M/M	M/M	Mol por metro cúbico
+M/S	M/S	Metro/Segundo
+M%	M%	Porcentaje-masa
+M%O	M%O	Tanto por mil-masa
+M2	M2	Metro cuadrado
+M2S	M2S	Metro cuadrado/Segundo
+M3	M3	Metro cúbico
+M3H	M3H	Metro cúbico/Hora
+M3S	M3S	Metro cúbico/Segundo
+MA	MA	Miliamperio
+MB	MB	Marbete
+MBA	MBA	Milibar
+MBT	MBT	Metrobaro/Segundo
+MEJ	MEJ	Megajulio
+MES	MES	Meses
+MF	MF	Milifaradio
+MG	MG	Miligramo
+MGG	MGG	Miligramo/Gramo
+MGK	MGK	Miligramo/Kilogramo
+MGL	MGL	Miligramo/Litro
+MGO	MGO	Megaohmio
+MGS	MGS	Miligramo/Centímetro cuadrado
+MGV	MGV	Miligramo/Metro cúbico
+MGW	MGW	Megavatio
+MHZ	MHZ	Megahercio
+MI	MI	Milla
+MI2	MI2	Milla cuadrada
+MIC	MIC	Micras
+MIL	MIL	Millares
+MIN	MIN	Minuto
+MIS	MIS	Microsegundo
+MJ	MJ	Milijulio
+MKG	MKG	Miliequivalente Oxigeno/Kg
+ML	ML	Mililitro
+MLF	MLF	Millimol por litro
+MLG	MLG	Meilas por galón (EEUU)
+MLS	MLS	Mililitro/Metro cúbico
+MLW	MLW	Milílitro principio activo
+MM	MM	Milímetro
+MM2	MM2	Milímetro cuadrado
+MM3	MM3	Milímetro cúbico
+MMA	MMA	Milímetro/Año
+MMG	MMG	Milimol/Gramo
+MMH	MMH	Milímetro/Hora
+MMK	MMK	Milimol/Kilogramo
+MMO	MMO	Milimol
+MMS	MMS	Milímetro/Segundo
+MN	MN	Meganewton
+MNM	MNM	Milinewton/Metro
+MOK	MOK	Mol/Kilogramo
+MOL	MOL	Mol
+MOM	MOM	moldes por minuto
+MPA	MPA	Megapascal
+MPB	MPB	Masa-parts per billion
+MPM	MPM	Masa-parts per million
+MPS	MPS	Milipascal por segundo
+MPT	MPT	Masa-parts per trillion
+MPZ	MPZ	Metropascal/Segundo
+MS	MS	Milisegundo
+MS2	MS2	Metro/Segundo al cuadrado
+MSC	MSC	Microsiemens por centímetro
+MT	MT	Metro
+MTA	MTA	Minitaco
+MTE	MTE	Militesla
+MTM	MTM	Metros por minuto
+MV	MV	Milivoltio
+MVA	MVA	Megavoltioamperio
+MW	MW	Milivatio
+MWH	MWH	Megavatio/Hora
+N	N	Newton
+N/M	N/M	Newton/Metro
+N/P	N/P	Número más Probable por Gramo
+NA	NA	Nanoamperio
+NAM	NAM	Nanometro
+NF	NF	Nanofaradio
+NML	NML	Numero probable Mililitro
+NMM	NMM	Newton/Milímetro cuadrado
+NMP	NMP	Megavoltio
+NPM	NPM	Número más Probable
+NS	NS	Nanosegundo
+OHM	OHM	Ohmio
+OZ	OZ	Onza
+OZF	OZF	Onza líquida EE.UU.
+P	P	Puntos
+P2	P2	Pulgada cuadrada
+P3	P3	Pulgada cúbica
+P3M	P3M	Pies Cubicos por Minuto
+PA	PA	Pascal
+PA1	PA1	Palet Dollar General
+PA2	PA2	Palet Family Dollar
+PA3	PA3	Palet Sonic
+PAL	PAL	Paleta
+PAQ	PAQ	Paquete
+PAR	PAR	Par
+PAS	PAS	Pascal-segundo
+pc1	pc1	pies cubicos dollar general
+pc2	pc2	pies cubicos family dollar
+pc3	pc3	pies cubicos sonic
+PES	PES	PESOS COLOMBIANOS
+PF	PF	Picofaradio
+PH	PH	PH
+PI2	PI2	Pie cuadrado
+PI3	PI3	Pie cúbico
+PIE	PIE	Pie
+PL	PL	Plegadiza
+POI	POI	Poises
+PP	PP	Prepack
+PP2	PP2	Prepack 2
+PP3	PP3	Prepack 3
+PP4	PP4	Prepack 4
+PPB	PPB	Parts per billion
+PPM	PPM	Parts per million
+PPT	PPT	Parts per trillion
+PQ	PQ	Paquetaco
+PRS	PRS	Número de personas
+PS	PS	Picosegundo
+PT	PT	"Pinta EE.UU., líquido"
+PUL	PUL	Pulgada
+PZA	PZA	Unidad
+Q	Q	Quetzal producciòn Guatemala
+QQ	QQ	Quintal
+RG	RG	Regalo
+RM	RM	Resma
+ROL	ROL	Rollo
+RPM	RPM	Revoluciones por minuto
+S	S	Segundo
+SB	SB	Sobre
+SEM	SEM	Semanas
+SER	SER	Servicio
+T	T	TT
+TAM	TAM	Tambor
+TAN	TAN	Tanque
+TB	TB	Tableta
+TC	TC	Taco
+TEN	TEN	Tendido
+TES	TES	Tesla
+TIR	TIR	Tira
+TK	TK	Tetra Brik
+TL	TL	Talonario
+TNH	TNH	Tonelada por hora
+TOM	TOM	Tonelada/Metro cúbico
+TON	TON	Tonelada
+TR	TR	Tarro
+TS	TS	Miles
+TU	TU	Tubo
+UE	UE	Unidades enzimas
+UF2	UF2	Unidad formadora colonia/ cm2
+UFC	UFC	Unidades Formadoras de Colonia
+UFH	UFH	Unidad formadora colonia/ hora
+UFM	UFM	Und formadora Colonia Mililitr
+UI	UI	Unidad Internacional
+UN	UN	Unidad
+UNM	UNM	Unidad por minuto
+UNO	UNO	Uno
+UP	UP	Unidad de potencia
+URL	URL	Unidad Relativa de Luz
+V	V	Voltio
+V%	V%	Porcentaje en volumen
+V%O	V%O	Tanto por mil volumen
+VA	VA	Vaso
+VPB	VPB	Volumen-parts per billion
+VPM	VPM	Volumen-parts per million
+VPT	VPT	Volumen-parts per trillion
+VR	VR	Varilla
+VTA	VTA	Voltiamperio
+W	W	Vatios
+YD	YD	Yarda
+YD2	YD2	Yarda cuadrada
+YD3	YD3	Yarda cúbica
