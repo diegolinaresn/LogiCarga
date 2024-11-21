@@ -1,6 +1,6 @@
 import { onMount } from "solid-js";
 import Chart from "chart.js/auto";
-
+import AuthGuard from "~/components/login/AuthGuard";
 export default function Analitica() {
   let efficiencyChartCanvas, economicLossChartCanvas, riskAnalysisChartCanvas;
 
@@ -96,6 +96,7 @@ export default function Analitica() {
   });
 
   return (
+    
     <main class="text-center mx-auto text-gray-700 p-4">
       <h1 class="text-4xl text-sky-700 uppercase my-8 font-bold">Analítica</h1>
 
@@ -125,5 +126,6 @@ export default function Analitica() {
 
 
     </main>
+    
   );
 }

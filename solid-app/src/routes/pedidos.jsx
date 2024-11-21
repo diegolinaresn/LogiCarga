@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-
+import AuthGuard from "~/components/login/AuthGuard";
 export default function Pedidos() {
   const [orders, setOrders] = createSignal([
     { id: 1, customer: "Juan Perez", product: "Laptop", status: "En Proceso" },
@@ -46,6 +46,7 @@ export default function Pedidos() {
   };
 
   return (
+    <AuthGuard>
     <main class="text-center mx-auto text-gray-700 p-4">
       <h1 class="text-4xl text-sky-700 uppercase my-8 font-bold">Gestión de Pedidos</h1>
 
@@ -175,5 +176,7 @@ export default function Pedidos() {
         </div>
       )}
     </main>
+    </AuthGuard>  
   );
+ 
 }
