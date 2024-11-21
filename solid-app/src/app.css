@@ -2,19 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 :root {
-  --background-rgb: 214, 219, 220;
-  --foreground-rgb: 0, 0, 0;
+  --background-rgb: rgba(0, 120, 200, 0.305); /* Celeste muy claro, casi blanco */
+  --foreground-rgb: rgba(0, 120, 200, 0.305); /* Texto oscuro suave */
+  --primary-color: rgb(99, 155, 205); /* Celeste para botones y enlaces */
+  --accent-color: rgb(0, 130, 145); /* Color acento, un verde-azul suave */
+  --neutral-light: rgb(99, 155, 205); /* Un gris claro para bordes o sombras */
+  --button-color: rgb(70, 130, 180); /* Celeste más oscuro para el hover */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background-rgb: 193, 255, 255;
-    --foreground-rgb: 255, 255, 255;
+    --background-rgb: rgba(0, 120, 200, 0.305); /* Fondo oscuro cálido */
+    --foreground-rgb: rgba(0, 120, 200, 0.305); /* Texto blanco suave */
+    --primary-color: rgb(99, 155, 205); /* Celeste para botones y enlaces */
+    --accent-color: rgb(0, 130, 145); /* Color acento, un verde-azul suave */
+    --neutral-light: rgba(50, 50, 50, 0.311); /* Gris oscuro para bordes o sombras */
+    --button-color: rgb(70, 130, 180); /* Celeste más oscuro para el hover */
   }
 }
 
 body {
+  font-family: 'Poppins', sans-serif;
   background: rgb(var(--background-rgb));
   color: rgb(var(--foreground-rgb));
+  transition: background-color 0.3s, color 0.3s; /* Transición suave entre modos */
+}
+
+a {
+  color: rgb(var(--primary-color));
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: rgb(var(--accent-color));
+  text-decoration: underline;
+}
+
+.container {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0); /* Sombra suave para contenedores */
+}
+button {
+  background-color: var(--button-color) !important;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+}
+
+
+button:hover {
+  background-color:rgb(70, 130, 180); /* Celeste más oscuro para el hover */
+  transform: scale(1.05);
+}
+
+/* Para los elementos de la barra de navegación */
+nav a {
+  color: rgb(var(--foreground-rgb));
+  font-weight: bold;
+}
+
+nav a:hover {
+  color: rgb(var(--primary-color));
 }

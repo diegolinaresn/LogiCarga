@@ -3,7 +3,7 @@ import { A } from "@solidjs/router";
 export default function Dashboard() {
   return (
     <main class="text-center mx-auto text-gray-700 p-4">
-      <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">Aqui poner lo del dashboard alv</h1>
+      <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">Aqui poner lo del index alv</h1>
       <p class="mt-8">
         Visit{" "}
         <a href="https://solidjs.com" target="_blank" class="text-sky-600 hover:underline">

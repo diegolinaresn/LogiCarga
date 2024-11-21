@@ -35,17 +35,20 @@ export default function Nav() {
   return (
     <nav class="bg-sky-800">
       <ul class="container flex items-center p-3 text-gray-200">
-        <li class={`border-b-2 ${active("/")} mx-1.5 sm:mx-6`}>
-          <a href="/">Home</a>
+        <li class={`border-b-2 ${active("/dashboard")} mx-1.5 sm:mx-6`}>
+          <a href="/dashboard" class="font-bold">Dashboard</a>
+        </li>
+        <li class={`border-b-2 ${active("/clientes")} mx-1.5 sm:mx-6`}>
+          <a href="/clientes" class="font-bold">Clientes</a>
         </li>
         <li class={`border-b-2 ${active("/rutas")} mx-1.5 sm:mx-6`}>
-          <a href="/rutas">Rutas</a>
+          <a href="/rutas" class="font-bold">Rutas</a>
         </li>
-        <li class={`border-b-2 ${active("/about")} mx-1.5 sm:mx-6`}>
-          <a href="/about">About</a>
+        <li class={`border-b-2 ${active("/pedidos")} mx-1.5 sm:mx-6`}>
+          <a href="/pedidos" class="font-bold">Pedidos</a>
         </li>
-        <li class={`border-b-2 ${active("/dashboard")} mx-1.5 sm:mx-6`}>
-          <a href="/dashboard">Dashboard</a>
+        <li class={`border-b-2 ${active("/analitica")} mx-1.5 sm:mx-6`}>
+          <a href="/analitica" class="font-bold">Analítica</a>
         </li>
 
         {/* Botón que cambia entre Editar Perfil y Login */}
