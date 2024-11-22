@@ -11,7 +11,8 @@ export default function Clientes() {
   const [isDeleteModalOpen, setDeleteModalOpen] = createSignal(false);
   const [newClient, setNewClient] = createSignal({ name: "", email: "", phone: "" });
   const [editingClient, setEditingClient] = createSignal(null);
-  const [clientToDelete, setClientToDelete] = createSignal(null);
+  const [deleteClientId, setDeleteClientId] = createSignal("");
+  const [editClientId, setEditClientId] = createSignal("");
 
   const addClient = () => {
     if (newClient().name && newClient().email && newClient().phone) {
@@ -21,6 +22,8 @@ export default function Clientes() {
       ]);
       setNewClient({ name: "", email: "", phone: "" });
       setAddModalOpen(false);
+    } else {
+      alert("Por favor completa todos los campos.");
     }
   };
 
@@ -33,52 +36,58 @@ export default function Clientes() {
       );
       setEditingClient(null);
       setEditModalOpen(false);
+    } else {
+      alert("Por favor completa todos los campos.");
     }
   };
 
   const deleteClient = () => {
-    setClients(clients().filter((client) => client.id !== clientToDelete().id));
-    setDeleteModalOpen(false);
+    const clientId = parseInt(deleteClientId());
+    const clientExists = clients().find((client) => client.id === clientId);
+    if (clientExists) {
+      setClients(clients().filter((client) => client.id !== clientId));
+      setDeleteClientId("");
+      setDeleteModalOpen(false);
+    } else {
+      alert("Cliente no encontrado.");
+    }
+  };
+
+  const searchClientForEdit = () => {
+    const clientId = parseInt(editClientId());
+    const clientToEdit = clients().find((client) => client.id === clientId);
+    if (clientToEdit) {
+      setEditingClient(clientToEdit);
+    } else {
+      alert("Cliente no encontrado.");
+    }
   };
 
   return (
     <main class="text-center mx-auto text-gray-700 p-4">
-  <h1 class="text-4xl text-sky-700 uppercase my-8 font-bold">Gestión de Clientes</h1>
+      <h1 class="text-4xl text-sky-700 uppercase my-8 font-bold">Gestión de Clientes</h1>
 
       {/* Buttons Row */}
       <div class="flex justify-end gap-4 mb-4">
-      <button
-        class="bg-sky-500 text-white px-4 py-2 rounded"
-        onClick={() => setAddModalOpen(true)}
-      >
-        Agregar
-      </button>
-      <button
-        class="bg-yellow-500 text-white px-4 py-2 rounded"
-        onClick={() => {
-          const firstClient = clients()[0];
-          if (firstClient) {
-            setEditingClient(firstClient);
-            setEditModalOpen(true);
-          }
-        }}
-      >
-        Editar
-      </button>
-      <button
-        class="bg-red-500 text-white px-4 py-2 rounded"
-        onClick={() => {
-          const firstClient = clients()[0];
-          if (firstClient) {
-            setClientToDelete(firstClient);
-            setDeleteModalOpen(true);
-          }
-        }}
-      >
-        Eliminar
-      </button>
-    </div>
-
+        <button
+          class="bg-sky-500 text-white px-4 py-2 rounded"
+          onClick={() => setAddModalOpen(true)}
+        >
+          Agregar
+        </button>
+        <button
+          class="bg-yellow-500 text-white px-4 py-2 rounded"
+          onClick={() => setEditModalOpen(true)}
+        >
+          Editar
+        </button>
+        <button
+          class="bg-red-500 text-white px-4 py-2 rounded"
+          onClick={() => setDeleteModalOpen(true)}
+        >
+          Eliminar
+        </button>
+      </div>
 
       {/* Clients Table */}
       <div class="overflow-x-auto">
@@ -138,25 +147,99 @@ export default function Clientes() {
                 Cancelar
               </button>
               <button
-                class="bg-sky-500 text-white px-4 py-2 rounded"
+                class="bg-green-500 text-white px-4 py-2 rounded"
                 onClick={addClient}
               >
-                Guardar
+                Agregar
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Edit Client Modal */}
+      {isEditModalOpen() && (
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div class="bg-white p-6 rounded shadow-md w-96">
+            <h2 class="text-2xl mb-4">Editar Cliente</h2>
+            {/* Input to search for the client by ID */}
+            <input
+              class="border border-gray-300 rounded px-4 py-2 w-full mb-2"
+              type="number"
+              placeholder="ID del cliente"
+              value={editClientId()}
+              onInput={(e) => setEditClientId(e.target.value)}
+            />
+            <button
+              class="bg-yellow-500 text-white px-4 py-2 rounded w-full mb-4"
+              onClick={searchClientForEdit}
+            >
+              Buscar Cliente
+            </button>
+
+            {/* Display client details if found */}
+            {editingClient() && (
+              <>
+                <input
+                  class="border border-gray-300 rounded px-4 py-2 w-full mb-2"
+                  type="text"
+                  placeholder="Nombre"
+                  value={editingClient()?.name || ""}
+                  onInput={(e) =>
+                    setEditingClient({ ...editingClient(), name: e.target.value })
+                  }
+                />
+                <input
+                  class="border border-gray-300 rounded px-4 py-2 w-full mb-2"
+                  type="email"
+                  placeholder="Email"
+                  value={editingClient()?.email || ""}
+                  onInput={(e) =>
+                    setEditingClient({ ...editingClient(), email: e.target.value })
+                  }
+                />
+                <input
+                  class="border border-gray-300 rounded px-4 py-2 w-full mb-2"
+                  type="tel"
+                  placeholder="Teléfono"
+                  value={editingClient()?.phone || ""}
+                  onInput={(e) =>
+                    setEditingClient({ ...editingClient(), phone: e.target.value })
+                  }
+                />
+                <div class="flex justify-end gap-4">
+                  <button
+                    class="bg-gray-500 text-white px-4 py-2 rounded"
+                    onClick={() => setEditModalOpen(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    class="bg-green-500 text-white px-4 py-2 rounded"
+                    onClick={updateClient}
+                  >
+                    Guardar cambios
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Client Modal */}
       {isDeleteModalOpen() && (
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div class="bg-white p-6 rounded shadow-md w-96 text-center">
-            <h2 class="text-xl mb-4">¿Eliminar Cliente?</h2>
-            <p class="mb-4">
-              ¿Estás seguro de que deseas eliminar a {clientToDelete()?.name}?
-            </p>
-            <div class="flex justify-center gap-4">
+          <div class="bg-white p-6 rounded shadow-md w-96">
+            <h2 class="text-2xl mb-4">Eliminar Cliente</h2>
+            <input
+              class="border border-gray-300 rounded px-4 py-2 w-full mb-2"
+              type="number"
+              placeholder="ID del cliente"
+              value={deleteClientId()}
+              onInput={(e) => setDeleteClientId(e.target.value)}
+            />
+            <div class="flex justify-end gap-4">
               <button
                 class="bg-gray-500 text-white px-4 py-2 rounded"
                 onClick={() => setDeleteModalOpen(false)}
