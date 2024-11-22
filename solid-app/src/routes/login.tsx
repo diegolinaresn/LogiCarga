@@ -1,12 +1,9 @@
-import { createSignal, Show } from "solid-js";
+import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { login, logout, user } from "../components/authstore";
-import UserProfile from "~/components/UserProfile";
+import { login, logout } from "../components/authstore";
 
 // Función para obtener los datos del usuario
 const fetchUserData = async (token: string) => {
-  if (typeof window === "undefined") return null; // Prevenir ejecución en el servidor
-
   try {
     const response = await fetch("http://127.0.0.1:5005/users/me", {
       method: "GET",
@@ -31,10 +28,12 @@ export default function Login() {
   const [email, setEmail] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [error, setError] = createSignal("");
+  const [isLoading, setIsLoading] = createSignal(false); // Estado para manejar el loading
   const navigate = useNavigate();
 
   const handleLogin = async (e: Event) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await fetch("http://127.0.0.1:5005/token", {
@@ -62,65 +61,49 @@ export default function Login() {
       navigate("/"); // Redirige al inicio
     } catch (err: any) {
       setError(err.message || "Error inesperado al iniciar sesión");
+    } finally {
+      setIsLoading(false); // Detener el loading
     }
-  };
-
-  const handleLogout = () => {
-    logout(); // Llama al estado global de logout
-    navigate("/login"); // Redirige al login
   };
 
   return (
     <main class="text-center mx-auto text-gray-700 p-4">
-      <Show
-        when={typeof window !== "undefined" && user()}
-        fallback={
-          <div class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
-            <h1 class="text-2xl font-bold mb-4">Iniciar Sesión</h1>
-            <form onSubmit={handleLogin}>
-              {error() && <p class="text-red-500 mb-2">{error()}</p>}
-              <div class="mb-4">
-                <input
-                  type="email"
-                  placeholder="Correo Electrónico"
-                  value={email()}
-                  onInput={(e) => setEmail(e.currentTarget.value)}
-                  class="w-full p-2 border rounded"
-                  required
-                />
-              </div>
-              <div class="mb-4">
-                <input
-                  type="password"
-                  placeholder="Contraseña"
-                  value={password()}
-                  onInput={(e) => setPassword(e.currentTarget.value)}
-                  class="w-full p-2 border rounded"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-              >
-                Iniciar Sesión
-              </button>
-            </form>
+      <div class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
+        <h1 class="text-2xl font-bold mb-4">Iniciar Sesión</h1>
+        {error() && <p class="text-red-500 mb-2">{error()}</p>}
+        <form onSubmit={handleLogin}>
+          <div class="mb-4">
+            <label class="block text-left text-gray-700 font-semibold">Correo Electrónico:</label>
+            <input
+              type="email"
+              placeholder="Correo Electrónico"
+              value={email()}
+              onInput={(e) => setEmail(e.currentTarget.value)}
+              class="w-full p-2 border rounded"
+              required
+            />
           </div>
-        }
-      >
-        <div class="bg-blue-100 p-6 rounded-md shadow-md">
-          <h1 class="text-2xl font-bold mb-4">
-            ¡Bienvenido, {user()?.email}!
-          </h1>
+          <div class="mb-4">
+            <label class="block text-left text-gray-700 font-semibold">Contraseña:</label>
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password()}
+              onInput={(e) => setPassword(e.currentTarget.value)}
+              class="w-full p-2 border rounded"
+              required
+            />
+          </div>
           <button
-            class="mt-4 bg-red-500 text-white p-2 rounded hover:bg-red-600"
-            onClick={handleLogout}
+            type="submit"
+            class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            disabled={isLoading()}
           >
-            Cerrar Sesión
+            {isLoading() ? "Cargando..." : "Iniciar Sesión"}
           </button>
-        </div>
-      </Show>
+        </form>
+      </div>
     </main>
   );
 }
+  

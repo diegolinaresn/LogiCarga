@@ -1,34 +1,32 @@
 import { useLocation, useNavigate } from "@solidjs/router";
-import { createSignal, createEffect, Show} from "solid-js";
+import { isLoggedIn, logout } from "../components/authstore"; // Importar el estado global
+import { createEffect, createSignal } from "solid-js";
 
 export default function Nav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = createSignal(false);
+  const [hydrated, setHydrated] = createSignal(false); // Para evitar inconsistencias iniciales
 
-  // Efecto para sincronizar el estado con el token
+  // Aseguramos que el cliente esté hidratado antes de tomar decisiones
   createEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token); // Actualiza el estado según el token
-    console.log("Estado actualizado de isLoggedIn:", isLoggedIn());
+    setHydrated(true); // Marcar como hidratado
   });
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Elimina el token
-    setIsLoggedIn(false); // Cambia el estado reactivo
+    logout(); // Cierra sesión globalmente
     navigate("/login"); // Redirige al login
-  };
-
-  const handleLogin = () => {
-    navigate("/login"); // Redirige a la página de login
   };
 
   const handleEditProfile = () => {
     navigate("/editprofile"); // Redirige a la página de edición de perfil
   };
 
+  const handleLogin = () => {
+    navigate("/login"); // Redirige a la página de login
+  };
+
   const active = (path: string) =>
-    path == location.pathname
+    path === location.pathname
       ? "border-sky-600"
       : "border-transparent hover:border-sky-600";
 
@@ -36,7 +34,7 @@ export default function Nav() {
     <nav class="bg-sky-800">
       <ul class="container flex items-center p-3 text-gray-200">
         <li class={`border-b-2 ${active("/dashboard")} mx-1.5 sm:mx-6`}>
-          <a href="/dashboard" class="font-bold">Dashboard</a>
+          <a href="/" class="font-bold">Dashboard</a>
         </li>
         <li class={`border-b-2 ${active("/clientes")} mx-1.5 sm:mx-6`}>
           <a href="/clientes" class="font-bold">Clientes</a>
@@ -51,26 +49,31 @@ export default function Nav() {
           <a href="/analitica" class="font-bold">Analítica</a>
         </li>
 
-        {/* Botón que cambia entre Editar Perfil y Login */}
-        <li class="ml-auto">
-          <button
-            class={`${
-              isLoggedIn()
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-blue-500 hover:bg-blue-600"
-            } text-white px-4 py-2 rounded mr-2`}
-            onClick={() => (isLoggedIn() ? handleEditProfile() : handleLogin())}
-          >
-            {isLoggedIn() ? "Editar Perfil" : "Iniciar Sesión"}
-          </button>
-
-          {/* Botón de Cerrar Sesión */}
-          <Show when={isLoggedIn()}>
+        {/* Botones para Configuración, Login y Cerrar Sesión */}
+        <li class="ml-auto flex items-center space-x-4">
+          <Show when={hydrated() && isLoggedIn()}>
+            {/* Botón Configuración */}
+            <button
+              class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+              onClick={handleEditProfile}
+            >
+              Configuración
+            </button>
+            {/* Botón Cerrar Sesión */}
             <button
               class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
               onClick={handleLogout}
             >
               Cerrar Sesión
+            </button>
+          </Show>
+          <Show when={hydrated() && !isLoggedIn()}>
+            {/* Botón Iniciar Sesión */}
+            <button
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              onClick={handleLogin}
+            >
+              Iniciar Sesión
             </button>
           </Show>
         </li>

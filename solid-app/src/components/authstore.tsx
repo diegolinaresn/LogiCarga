@@ -1,10 +1,12 @@
 import { createSignal } from "solid-js";
 
-const [user, setUser] = createSignal(null); // Estado inicial consistente
+// Estado global para el usuario y autenticación
+const [user, setUser] = createSignal(null);
 const [isLoggedIn, setIsLoggedIn] = createSignal(
   typeof window !== "undefined" && !!localStorage.getItem("token")
 );
 
+// Manejo del inicio de sesión
 const login = (token: string, userData: any) => {
   if (typeof window !== "undefined") {
     localStorage.setItem("token", token);
@@ -13,6 +15,7 @@ const login = (token: string, userData: any) => {
   }
 };
 
+// Manejo del cierre de sesión
 const logout = () => {
   if (typeof window !== "undefined") {
     localStorage.removeItem("token");

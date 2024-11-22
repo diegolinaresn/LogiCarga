@@ -4,7 +4,7 @@ import { Suspense } from "solid-js";
 import Nav from "~/components/Nav";
 import AuthGuard from "./components/login/AuthGuard";
 import "./app.css";
-import Home from "./routes/dashboard";
+import Home from "./routes/index";
 
 export default function App() {
   return (
