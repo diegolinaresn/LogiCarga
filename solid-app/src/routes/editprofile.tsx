@@ -39,7 +39,7 @@ export default function EditProfile() {
 
   return (
 
-    <main class="text-center mx-auto text-gray-700 p-4">
+    <main class="p-8 bg-gray-100 min-h-screen">
       <div class="p-5 max-w-md mx-auto bg-white rounded shadow-md space-y-4">
         <h1 class="text-2xl font-bold">Editar Perfil</h1>
         {error() && <p class="text-red-500">{error()}</p>}

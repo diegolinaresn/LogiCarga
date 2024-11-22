@@ -64,10 +64,9 @@ export default function Clientes() {
   };
 
   return (
-    <main class="text-center mx-auto text-gray-700 p-4">
+    <main class="p-8 bg-gray-100 min-h-screen">
       <h1 class="text-4xl text-sky-700 uppercase my-8 font-bold">Gestión de Clientes</h1>
 
-      {/* Buttons Row */}
       <div class="flex justify-end gap-4 mb-4">
         <button
           class="bg-sky-500 text-white px-4 py-2 rounded"
@@ -89,7 +88,6 @@ export default function Clientes() {
         </button>
       </div>
 
-      {/* Clients Table */}
       <div class="overflow-x-auto">
         <table class="table-auto w-full border-collapse border border-gray-300">
           <thead>

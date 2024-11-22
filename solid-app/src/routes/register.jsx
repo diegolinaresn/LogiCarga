@@ -40,7 +40,7 @@ export default function Register() {
   };
 
   return (
-    <main class="text-center mx-auto text-gray-700 p-4">
+    <main class="p-8 bg-gray-100 min-h-screen">
     <div>
       <h1>Registro</h1>
       <form onSubmit={handleRegister}>

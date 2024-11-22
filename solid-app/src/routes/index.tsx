@@ -3,7 +3,7 @@ import { A } from "@solidjs/router";
 export default function Home() {
   return (
     <main class="p-8 bg-gray-100 min-h-screen">
-      <h1 class="text-4xl text-sky-700 font-bold uppercase mb-8 text-center">Dashboard</h1>
+      <h1 class="text-4xl text-sky-700 uppercase my-8 font-bold">Dashboard</h1>
 
       {/* Cards Section */}
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -39,9 +39,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Optional Footer */}
-      <footer class="text-center mt-16 text-gray-600">
-      </footer>
     </main>
   );
 };

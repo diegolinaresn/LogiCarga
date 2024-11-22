@@ -5,8 +5,8 @@ import MapComponent from "~/components/Map";
 export default function Rutas() {
   return (
     <AuthGuard>
-      <main class="text-center mx-auto text-gray-700 p-4">
-        <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">Rutas</h1>
+      <main class="p-8 bg-gray-100 min-h-screen">
+      <h1 class="text-4xl text-sky-700 uppercase my-8 font-bold">Rutas</h1>
         <MapComponent />
       </main>
     </AuthGuard>

@@ -67,7 +67,7 @@ export default function Login() {
   };
 
   return (
-    <main class="text-center mx-auto text-gray-700 p-4">
+    <main class="p-8 bg-gray-100 min-h-screen">
       <div class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
         <h1 class="text-2xl font-bold mb-4">Iniciar Sesión</h1>
         {error() && <p class="text-red-500 mb-2">{error()}</p>}
