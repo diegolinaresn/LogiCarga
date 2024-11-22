@@ -59,21 +59,24 @@ export default function Nav() {
                 Dashboard
               </a>
             </li>
-            <li>
-              <a href="/clientes" class={`pb-1 ${active("/clientes")}`}>
-                Clientes
-              </a>
-            </li>
-            <li>
-              <a href="/rutas" class={`pb-1 ${active("/rutas")}`}>
-                Rutas
-              </a>
-            </li>
-            <li>
-              <a href="/pedidos" class={`pb-1 ${active("/pedidos")}`}>
-                Pedidos
-              </a>
-            </li>
+            <Show when={hydrated() && isLoggedIn()}>
+  <li>
+    <a href="/clientes" class={`pb-1 ${active("/clientes")}`}>
+      Clientes
+    </a>
+  </li>
+  <li>
+    <a href="/rutas" class={`pb-1 ${active("/rutas")}`}>
+      Rutas
+    </a>
+  </li>
+  <li>
+    <a href="/pedidos" class={`pb-1 ${active("/pedidos")}`}>
+      Pedidos
+    </a>
+  </li>
+</Show>
+
             <li>
               <a href="/analitica" class={`pb-1 ${active("/analitica")}`}>
                 Analítica
