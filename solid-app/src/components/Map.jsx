@@ -7,9 +7,11 @@ const MapComponentWithChart = (props) => {
   let stepInterval; // Interval for vehicle movement
   let mapContainer; // Reference to the map div container
   let chartCanvas; // Reference to the Chart.js canvas element
+  let directionsRenderer; // Renderer for displaying the route on the map
 
   const [duration, setDuration] = createSignal("Loading...");
   const [routeData, setRouteData] = createSignal(null);
+  const [routeId, setRouteId] = createSignal(""); // Signal for the route ID input
 
   // Initialize the Google Map
   const initMap = () => {
@@ -19,15 +21,26 @@ const MapComponentWithChart = (props) => {
     }
 
     map = new google.maps.Map(mapContainer, {
-      zoom: 14,
+      zoom: 12,
       center: { lat: 0, lng: 0 }, // Placeholder, updated with fetched data
+    });
+
+    // Initialize the DirectionsRenderer
+    directionsRenderer = new google.maps.DirectionsRenderer({
+      map: map,
+      suppressMarkers: true, // We will use custom markers
     });
   };
 
   // Fetch route data from the API
   const fetchRouteData = async () => {
+    if (!routeId()) {
+      alert("Por favor, introduce un ID de ruta.");
+      return;
+    }
+
     try {
-      const response = await fetch(props.apiUrl || "http://localhost:5001/map");
+      const response = await fetch(`http://localhost:5001/map?route_id=${routeId()}`);
       const data = await response.json();
 
       if (data.route) {
@@ -35,11 +48,10 @@ const MapComponentWithChart = (props) => {
         setDuration(route.duration);
         setRouteData(route);
 
-        // Center the map on the starting point
-        if (route.start_lat && route.start_long) {
-          map.setCenter(new google.maps.LatLng(route.start_lat, route.start_long));
-        } else {
-          console.error("Invalid starting coordinates.");
+        // Set map center to starting point
+        if (route.steps && route.steps.length > 0) {
+          const startPoint = route.steps[0];
+          map.setCenter(new google.maps.LatLng(startPoint.lat, startPoint.lng));
         }
 
         // Render the route on the map
@@ -50,37 +62,54 @@ const MapComponentWithChart = (props) => {
 
         // Render the chart
         renderChart(route);
+      } else if (data.error) {
+        console.error("API Error:", data.error);
+        alert(`Error al obtener la ruta: ${data.error}`);
+      } else {
+        console.error("Unexpected response:", data);
       }
     } catch (error) {
       console.error("Error fetching route data:", error);
     }
   };
 
-  // Render the route on the map using the Directions API
+  // Render the route on the map
   const renderRoute = (routeData) => {
     const directionsService = new google.maps.DirectionsService();
-    const directionsDisplay = new google.maps.DirectionsRenderer();
-    directionsDisplay.setMap(map);
+    const directionsDisplay = new google.maps.DirectionsRenderer({
+        map: map, // Vincula el renderizador al mapa
+        suppressMarkers: false, // Permite mostrar los marcadores predeterminados si es necesario
+    });
 
-    const start = new google.maps.LatLng(routeData.start_lat, routeData.start_long);
-    const end = new google.maps.LatLng(routeData.end_lat, routeData.end_long);
+    // Usa las coordenadas para la solicitud
+    const start = new google.maps.LatLng(
+        parseFloat(routeData.steps[0].lat),
+        parseFloat(routeData.steps[0].lng)
+    );
+    const end = new google.maps.LatLng(
+        parseFloat(routeData.steps[routeData.steps.length - 1].lat),
+        parseFloat(routeData.steps[routeData.steps.length - 1].lng)
+    );
 
     const request = {
-      origin: start,
-      destination: end,
-      travelMode: google.maps.TravelMode.DRIVING,
+        origin: start,
+        destination: end,
+        travelMode: google.maps.TravelMode.DRIVING, // Configura el modo de viaje como "DRIVING"
     };
 
+    // Solicita la ruta al servicio de direcciones
     directionsService.route(request, (response, status) => {
-      if (status === "OK") {
-        directionsDisplay.setDirections(response);
-      } else {
-        console.error("Directions request failed:", status);
-      }
+        if (status === "OK") {
+            directionsDisplay.setDirections(response); // Dibuja la ruta en el mapa
+        } else {
+            console.error("Directions request failed:", status);
+        }
     });
-  };
+};
 
-  // Simulate the vehicle movement along the steps
+
+
+  // Simulate vehicle movement along the steps
   const simulateVehicle = (steps) => {
     vehicleMarker = new google.maps.Marker({
       position: { lat: 0, lng: 0 }, // Placeholder, updated dynamically
@@ -115,11 +144,14 @@ const MapComponentWithChart = (props) => {
       new Chart(chartCanvas, {
         type: "bar",
         data: {
-          labels: ["Duration", "Distance"], // Example labels
+          labels: ["Duration (min)", "Distance (km)"],
           datasets: [
             {
               label: "Route Metrics",
-              data: [parseFloat(route.duration.split(" ")[0]), parseFloat(route.distance.split(" ")[0])],
+              data: [
+                parseFloat(route.duration.split(" ")[0]), // Duration in minutes
+                parseFloat(route.distance.split(" ")[0]), // Distance in km
+              ],
               backgroundColor: ["rgba(75, 192, 192, 0.6)", "rgba(255, 99, 132, 0.6)"],
               borderWidth: 1,
             },
@@ -147,7 +179,6 @@ const MapComponentWithChart = (props) => {
     const loadGoogleMaps = () => {
       if (window.google) {
         initMap();
-        fetchRouteData();
       } else {
         console.error("Google Maps API not loaded. Check your API key and permissions.");
       }
@@ -169,6 +200,17 @@ const MapComponentWithChart = (props) => {
   return (
     <div style="font-family: 'Poppins', sans-serif;">
       <h1>Mapa y Gráfica de la Ruta</h1>
+      <div style="margin-bottom: 20px;">
+        <label for="routeIdInput" style="margin-right: 10px;">ID de Ruta:</label>
+        <input
+          id="routeIdInput"
+          type="number"
+          value={routeId()}
+          onInput={(e) => setRouteId(e.target.value)}
+          placeholder="Introduce el ID de la ruta"
+        />
+        <button onClick={fetchRouteData} style="margin-left: 10px;">Buscar Ruta</button>
+      </div>
       <div style="display: flex; gap: 20px; flex-wrap: wrap;">
         {/* Google Maps Container */}
         <div
