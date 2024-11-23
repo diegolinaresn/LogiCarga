@@ -17,6 +17,61 @@ DB_CONFIG = {
     "database": "cargas"
 }
 
+@app_map.route('/map/tramos', methods=['GET'])
+def get_tramos():
+    """Devuelve la lista de todos los códigos de tramos."""
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+
+        query = "SELECT cod_tramo FROM tramos;"
+        cursor.execute(query)
+        tramos = cursor.fetchall()
+
+        return jsonify({"tramos": [tramo[0] for tramo in tramos]})
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": f"Error al conectar o consultar la base de datos: {str(e)}"}), 500
+    finally:
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app_map.route('/map/vias', methods=['GET'])
+def get_vias_by_tramo():
+    """Devuelve las vías afectadas dado un cod_tramo."""
+    tramo_id = request.args.get('tramo_id', default=None, type=int)
+    if not tramo_id:
+        return jsonify({"error": "Debes proporcionar un parámetro 'tramo_id' en la solicitud."}), 400
+
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+
+        # Consulta para obtener las vías afectadas
+        query = """
+            SELECT DISTINCT t.cod_tramo, v.VIA 
+            FROM Vias v
+            INNER JOIN Cierres c ON v.codigo_via = c.codigo_via
+            INNER JOIN Tramos t ON c.cod_tramo = t.cod_tramo
+            WHERE t.cod_tramo = %s;
+
+        """
+        cursor.execute(query, (tramo_id,))
+        results = cursor.fetchall()
+
+        if not results:
+            return jsonify({"vias": [], "message": f"No se encontraron vías para el tramo {tramo_id}."})
+
+        vias = [{"cod_tramo": row[0], "via": row[1]} for row in results]
+        return jsonify({"vias": vias})
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": f"Error al conectar o consultar la base de datos: {str(e)}"}), 500
+    finally:
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 @app_map.route('/map', methods=['GET'])
 def index():
@@ -27,11 +82,9 @@ def index():
     route_data = get_route(route_id)
     return jsonify(route=route_data)
 
-
 def get_route(route_id):
     """Obtener los municipios y calcular la ruta"""
     try:
-        # Conectar a la base de datos MySQL
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor()
 
@@ -51,9 +104,6 @@ def get_route(route_id):
 
         start_municipio = municipios[0].strip()
         end_municipio = municipios[1].strip()
-
-        # Debug: Verificar qué valores se están usando
-        print(f"Procesando ruta: Inicio -> {start_municipio}, Fin -> {end_municipio}")
 
         # Construir la URL de solicitud para Google Maps Directions API
         directions_url = (
@@ -85,7 +135,6 @@ def get_route(route_id):
                 "end_municipio": end_municipio
             }
         else:
-            # Mejor manejo de errores si Google Maps no encuentra la ruta
             return {
                 "error": f"No se encontró una ruta entre {start_municipio} y {end_municipio}.",
                 "google_status": directions_data['status']
@@ -100,7 +149,6 @@ def get_route(route_id):
         if 'conn' in locals() and conn.is_connected():
             cursor.close()
             conn.close()
-
 
 if __name__ == '__main__':
     app_map.run(port=5001, debug=True)
