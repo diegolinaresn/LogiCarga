@@ -1,0 +1,3 @@
+Tuve que hacer curl ifconfig.me para que me aparecierad mi IP publica para despues irme a GCP y darme acceso en SQL>REDES>CONEXIONES>ANADIR NUEVA IP
+Despues esperar a el cambio en GCP y ya me pude conectar
+La config esta en DB_COFIG.PY

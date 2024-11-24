@@ -59,10 +59,23 @@ export default function AnaliticaAvanzada() {
   const initializeMap = () => {
     const data = riskHeatmapData();
     if (data.length > 0) {
+      // Estilo del mapa en blanco y negro
+      const mapStyles = [
+        { elementType: "geometry", stylers: [{ color: "#ebe3cd" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#523735" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#f5f1e6" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#f5f1e6" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#f8c967" }] },
+        { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#e9bc62" }] },
+        { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#b9d3c2" }] },
+        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#92998d" }] },
+      ];
+
       const map = new google.maps.Map(mapContainer, {
         zoom: 6,
         center: { lat: 4.624335, lng: -74.063644 }, // Coordenadas iniciales
         mapTypeId: "roadmap",
+        styles: mapStyles, // Aplicar el estilo personalizado
       });
 
       // Crear puntos de calor
@@ -71,7 +84,7 @@ export default function AnaliticaAvanzada() {
         weight: item.num_bloqueos,
       }));
 
-      const heatmapLayer = new google.maps.visualization.HeatmapLayer({
+      new google.maps.visualization.HeatmapLayer({
         data: heatmapData.map((point) => ({
           location: point.location,
           weight: point.weight,
@@ -80,7 +93,7 @@ export default function AnaliticaAvanzada() {
         radius: 40, // Ajuste del radio
       });
 
-      console.log("Mapa de calor inicializado.");
+      console.log("Mapa de calor inicializado con estilo personalizado.");
     } else {
       console.warn("No hay datos para el mapa de calor.");
     }
@@ -174,9 +187,23 @@ export default function AnaliticaAvanzada() {
         </div>
 
         {/* Risk Heatmap */}
-        <div class="col-span-1 bg-white p-6 rounded shadow-md border" style={{ height: "400px" }}>
-          <h2 class="text-lg font-bold mb-4">Mapa de Calor de Riesgos</h2>
-          <div ref={(el) => (mapContainer = el)} style={{ height: "100%" }}></div>
+        <div
+          class="col-span-1 bg-white p-6 rounded shadow-md border"
+          style={{
+            height: "400px",
+            borderRadius: "15px", // Bordes redondeados
+            overflow: "hidden", // Recortar contenido
+          }}
+        >
+          <h2 class="text-lg font-bold mb-4">Mapa de Calor de Rutas Bloqueadas</h2>
+          <div
+            ref={(el) => (mapContainer = el)}
+            style={{
+              height: "90%",
+              borderRadius: "10px", // Bordes redondeados del mapa
+              overflow: "hidden", // Recortar contenido excedente
+            }}
+          ></div>
         </div>
       </div>
     </main>

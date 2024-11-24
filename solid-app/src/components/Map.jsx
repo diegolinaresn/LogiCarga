@@ -13,6 +13,7 @@ const MapComponentWithChart = () => {
   const [tramos, setTramos] = createSignal([]); // Signal for cod_tramo options
   const [viasAfectadas, setViasAfectadas] = createSignal([]); // Signal for affected roads
   const [fuelCost, setFuelCost] = createSignal(0); // Signal for fuel cost
+  const [isLoadingMap, setIsLoadingMap] = createSignal(true); // Nuevo estado para el indicador de carga del mapa
 
   // Constants for fuel calculation
   const FUEL_PRICE_PER_LITER = 26; // MXN per liter
@@ -26,8 +27,9 @@ const MapComponentWithChart = () => {
     }
 
     map = new google.maps.Map(mapContainer, {
-      zoom: 12,
-      center: { lat: 0, lng: 0 }, // Placeholder, updated with fetched data
+      zoom: 6, // Set a moderate zoom level
+      center: { lat: 4.711, lng: -74.0721 }, // Default center: Bogotá, Colombia
+      mapTypeId: "roadmap", // Roadmap view
     });
 
     // Initialize the DirectionsRenderer
@@ -239,22 +241,33 @@ const MapComponentWithChart = () => {
         <div
           style="flex: 1; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);"
         >
-          <h2>Vías Afectadas y Costo de Combustible</h2>
+          <h2 style="font-size: 24px; font-weight: bold; color: #0056b3; margin-bottom: 20px;">
+            Vías Afectadas y Costo de Combustible
+          </h2>
+          
+          <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
           <ul>
+          <p style="font-size: 18px; font-weight: bold; color: #444;">
             {viasAfectadas().map((via) => (
-              <li key={via.cod_tramo}>
-                <strong>Tramo {via.cod_tramo}:</strong> {via.via}
+              <li key={via.cod_tramo} style="margin-bottom: 10px;">
+                <strong style="color: #0056b3;">Tramo Afectado </strong> {via.via}
               </li>
             ))}
+            </p>
           </ul>
-          <p>
-            <strong>Duración:</strong> {duration()} <br />
-            <strong>Costo de Combustible:</strong> ${fuelCost()} MXN
-          </p>
+            <p style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #444;">
+              <span style="color: #0056b3;">Duración:</span> <span style="color: #444;">{duration()}</span>
+            </p>
+            
+            <p style="font-size: 18px; font-weight: bold; color: #444;">
+              <span style="color: #0056b3;">Costo de Combustible Aproximado: </span> 
+              <span style="color: #28a745;">${fuelCost()} MXN</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default MapComponentWithChart;

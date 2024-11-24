@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import mysql.connector
 import requests
+from db_config import DB_CONFIG  # Importar configuración de la base de datos
+
 
 app_map = Flask(__name__)
 CORS(app_map)  # Habilitar CORS para todas las rutas
@@ -10,12 +12,7 @@ CORS(app_map)  # Habilitar CORS para todas las rutas
 API_KEY = 'AIzaSyDTziMJXD_LXeJlxN2c8fZSsLWY65m3VHg'
 
 # Configuración de la conexión a MySQL
-DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "6666",
-    "database": "cargas"
-}
+
 
 @app_map.route('/map/tramos', methods=['GET'])
 def get_tramos():
@@ -51,9 +48,9 @@ def get_vias_by_tramo():
         # Consulta para obtener las vías afectadas
         query = """
             SELECT DISTINCT t.cod_tramo, v.VIA 
-            FROM Vias v
-            INNER JOIN Cierres c ON v.codigo_via = c.codigo_via
-            INNER JOIN Tramos t ON c.cod_tramo = t.cod_tramo
+            FROM vias v
+            INNER JOIN cierres c ON v.codigo_via = c.codigo_via
+            INNER JOIN tramos t ON c.cod_tramo = t.cod_tramo
             WHERE t.cod_tramo = %s;
 
         """

@@ -4,17 +4,10 @@ import mysql.connector
 import matplotlib.pyplot as plt
 import io
 import base64
+from db_config import DB_CONFIG  # Importar configuración de la base de datos
 
 app_analytics = Flask(__name__)
 CORS(app_analytics)
-
-# Configuración de la base de datos
-DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "6666",
-    "database": "cargas"
-}
 
 @app_analytics.route('/analytics/efficiency', methods=['GET'])
 def efficiency():
@@ -24,16 +17,28 @@ def efficiency():
         cursor = conn.cursor()
 
         query = """
-        SELECT MONTH(c.FECHASALIDACARGUE) AS month, YEAR(c.FECHASALIDACARGUE) AS year,
-               AVG(TIMESTAMPDIFF(HOUR, CONCAT(c.FECHASALIDACARGUE, ' ', c.HORA_SALIDA_CARGUE),
-                                 CONCAT(d.FECHALLEGADADESCARGUE, ' ', d.HORA_LLEGADA_DESCARGUE))) AS avg_hours
-        FROM Cargues c
-        INNER JOIN Descargues d ON c.CODIGO_CARGUE = d.CODIGO_DESCARGUE
-        WHERE c.FECHASALIDACARGUE IS NOT NULL AND c.HORA_SALIDA_CARGUE IS NOT NULL 
-          AND d.FECHALLEGADADESCARGUE IS NOT NULL AND d.HORA_LLEGADA_DESCARGUE IS NOT NULL
+            SELECT 
+        MONTH(c.FECHASALIDACARGUE) AS month, 
+        YEAR(c.FECHASALIDACARGUE) AS year,
+        AVG(TIMESTAMPDIFF(HOUR, 
+                        CONCAT(c.FECHASALIDACARGUE, ' ', c.HORA_SALIDA_CARGUE),
+                        CONCAT(d.FECHALLEGADADESCARGUE, ' ', d.HORA_LLEGADA_DESCARGUE))) AS avg_hours
+        FROM cargues c
+        INNER JOIN descargues d 
+            ON c.CODIGO_CARGUE = d.CODIGO_DESCARGUE
+        WHERE 
+            c.FECHASALIDACARGUE IS NOT NULL AND c.HORA_SALIDA_CARGUE IS NOT NULL
+            AND d.FECHALLEGADADESCARGUE IS NOT NULL AND d.HORA_LLEGADA_DESCARGUE IS NOT NULL
+            AND CONCAT(d.FECHALLEGADADESCARGUE, ' ', d.HORA_LLEGADA_DESCARGUE) > CONCAT(c.FECHASALIDACARGUE, ' ', c.HORA_SALIDA_CARGUE)
+            AND TIMESTAMPDIFF(HOUR, 
+                CONCAT(c.FECHASALIDACARGUE, ' ', c.HORA_SALIDA_CARGUE),
+                CONCAT(d.FECHALLEGADADESCARGUE, ' ', d.HORA_LLEGADA_DESCARGUE)
+            ) < 72 -- Excluye diferencias mayores a 72 horas
         GROUP BY year, month
         ORDER BY avg_hours ASC
         LIMIT 5;
+
+
         """
         cursor.execute(query)
         results = cursor.fetchall()
@@ -59,8 +64,8 @@ def economic_loss():
         query = """
         SELECT c.DESCRIPCION, SUM(o.VALOR_PACTADO - o.VALOR_PAGADO) AS total_loss, 
                AVG(o.VALOR_PACTADO - o.VALOR_PAGADO) AS avg_loss
-        FROM Operaciones o
-        INNER JOIN Cierres c ON o.codigo_via = c.codigo_via
+        FROM operaciones o
+        INNER JOIN cierres c ON o.codigo_via = c.codigo_via
         WHERE o.VALOR_PACTADO > o.VALOR_PAGADO 
           AND o.VALOR_PACTADO IS NOT NULL AND o.VALOR_PAGADO IS NOT NULL 
           AND c.DESCRIPCION IS NOT NULL
@@ -92,8 +97,8 @@ def risk_analysis():
         query = """
         SELECT t.tramo, t.sector, t.length_km, COUNT(c.cod_tramo) AS num_bloqueos, 
                SUM(t.length_km) AS total_length_affected
-        FROM Tramos t
-        LEFT JOIN Cierres c ON t.cod_tramo = c.cod_tramo
+        FROM tramos t
+        LEFT JOIN cierres c ON t.cod_tramo = c.cod_tramo
         WHERE t.tramo IS NOT NULL AND t.sector IS NOT NULL AND t.length_km IS NOT NULL
         GROUP BY t.cod_tramo
         ORDER BY num_bloqueos DESC

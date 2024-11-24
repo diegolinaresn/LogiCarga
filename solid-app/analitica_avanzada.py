@@ -4,17 +4,14 @@ import mysql.connector
 import matplotlib.pyplot as plt
 import io
 import base64
+from db_config import DB_CONFIG  # Importar configuración de la base de datos
+
+
 
 app_analitica_avanzada = Flask(__name__)
 CORS(app_analitica_avanzada)
 
 # Configuración de la base de datos
-DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "6666",
-    "database": "cargas"
-}
 
 @app_analitica_avanzada.route('/analytics/delivery_efficiency', methods=['GET'])
 def delivery_efficiency():
@@ -27,8 +24,8 @@ def delivery_efficiency():
         SELECT WEEK(c.FECHASALIDACARGUE) AS week, 
                YEAR(c.FECHASALIDACARGUE) AS year,
                COUNT(*) AS total_deliveries
-        FROM Cargues c
-        INNER JOIN Descargues d ON c.CODIGO_CARGUE = d.CODIGO_DESCARGUE
+        FROM cargues c
+        INNER JOIN descargues d ON c.CODIGO_CARGUE = d.CODIGO_DESCARGUE
         WHERE c.FECHASALIDACARGUE IS NOT NULL 
           AND d.FECHALLEGADADESCARGUE IS NOT NULL
         GROUP BY year, week
@@ -65,9 +62,9 @@ def economic_losses():
         query = """
         SELECT p.NATURALEZA AS product_type, c.DESCRIPCION AS sector,
                SUM(o.VALOR_PACTADO - o.VALOR_PAGADO) AS total_loss
-        FROM Operaciones o
-        INNER JOIN Cierres c ON o.codigo_via = c.codigo_via
-        INNER JOIN Productos p ON o.COD_PRODUCTO = p.COD_PRODUCTO
+        FROM operaciones o
+        INNER JOIN cierres c ON o.codigo_via = c.codigo_via
+        INNER JOIN productos p ON o.COD_PRODUCTO = p.COD_PRODUCTO
         WHERE o.VALOR_PACTADO > o.VALOR_PAGADO
         GROUP BY product_type, sector
         ORDER BY total_loss DESC;
@@ -103,8 +100,8 @@ def risk_heatmap():
 
         query = """
         SELECT t.sector, AVG(c.LAT) AS avg_lat, AVG(c.LON) AS avg_long, COUNT(c.cod_tramo) AS num_bloqueos
-        FROM Tramos t
-        LEFT JOIN Cierres c ON t.cod_tramo = c.cod_tramo
+        FROM tramos t
+        LEFT JOIN cierres c ON t.cod_tramo = c.cod_tramo
         GROUP BY t.sector
         ORDER BY num_bloqueos DESC;
         """
