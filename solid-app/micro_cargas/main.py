@@ -16,8 +16,7 @@ def stop_services():
             process.terminate()
             process.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            print(f"El proceso {process.pid} no se cerró a tiempo. Forzando cier
-re.")
+            print(f"El proceso {process.pid} no se cerró a tiempo. Forzando cierre.")
             process.kill()
 
 def signal_handler(sig, frame):
@@ -28,10 +27,10 @@ def main():
     print("Iniciando el script principal")
 
     services = [
-        {"file": "get_cargas", "port": 6000},
-        {"file": "post_cargas", "port": 6001},
-        {"file": "delete_cargas", "port": 6008},
-        {"file": "put_cargas", "port": 6005},
+        {"file": "cargas_get", "port": 6010},
+        {"file": "cargas_post", "port": 6001},
+        {"file": "cargas_del", "port": 6008},
+        {"file": "cargas_put", "port": 6005},
     ]
 
     signal.signal(signal.SIGINT, signal_handler)

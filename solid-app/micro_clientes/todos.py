@@ -7,6 +7,10 @@ services = [
     {"name": "analitica", "file": "analitica.py"},
     {"name": "auth", "file": "auth.py"},
     {"name": "authregister", "file": "authregister.py"},
+    {"name": "cliente_del", "file": "cliente_del.py"},
+    {"name": "cliente_get", "file": "cliente_get.py"},
+    {"name": "cliente_post", "file": "cliente_post.py"},
+    {"name": "cliente_put", "file": "cliente_put.py"},
     {"name": "map_service", "file": "map_service.py"},
 ]
 
