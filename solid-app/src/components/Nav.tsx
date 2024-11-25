@@ -72,7 +72,7 @@ export default function Nav() {
   </li>
   <li>
     <a href="/pedidos" class={`pb-1 ${active("/pedidos")}`}>
-      Pedidos
+      Cargas
     </a>
   </li>
 </Show>
