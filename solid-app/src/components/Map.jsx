@@ -87,7 +87,7 @@ const MapComponentWithChart = () => {
         // Calculate fuel cost
         const distanceInKm = parseFloat(route.distance.split(" ")[0]); // Extract numerical value
         const fuelUsed = distanceInKm * FUEL_CONSUMPTION_PER_KM; // Liters used
-        const cost = fuelUsed * FUEL_PRICE_PER_LITER; // Total cost
+        const cost = fuelUsed * FUEL_PRICE_PER_LITER * 2; // Total cost
         setFuelCost(cost.toFixed(2)); // Round to 2 decimals
 
         // Clear previous route and marker

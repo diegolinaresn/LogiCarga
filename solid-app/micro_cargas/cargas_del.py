@@ -3,8 +3,11 @@ import logging
 from db_config import DB_CONFIG
 from utils import setup_logging, error_response
 import mysql.connector
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
 
 def get_connection():
     return mysql.connector.connect(**DB_CONFIG)

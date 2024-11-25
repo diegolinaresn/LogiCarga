@@ -8,7 +8,7 @@ export default function Cargues() {
   const [offset, setOffset] = createSignal(0);
   const [errors, setErrors] = createSignal({});
 
-  const limit = 15; // Establecido por el backend
+  const limit = 15;
 
   const [newCargue, setNewCargue] = createSignal({
     CODIGO_CARGUE: "",
@@ -63,12 +63,23 @@ export default function Cargues() {
     }
   };
 
+  const validateFields = (fields) => {
+    const missingFields = Object.entries(fields).filter(([key, value]) => !value.trim());
+    if (missingFields.length > 0) {
+      alert(`Por favor, completa los campos: ${missingFields.map(([key]) => key).join(", ")}`);
+      return false;
+    }
+    return true;
+  };
+
   const createCargue = async () => {
+    if (!validateFields(newCargue())) return;
+
     try {
-      const response = await fetch("http://localhost:6011/cargues", {
+      const response = await fetch("http://localhost:6001/cargues", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newCargue()),
+        body: JSON.stringify({ cargues: [newCargue()] }),
       });
 
       if (response.ok) {
@@ -85,20 +96,14 @@ export default function Cargues() {
   };
 
   const updateCargue = async () => {
-    if (!editingCargue().CODIGO_CARGUE) {
-      alert("El código del cargue es obligatorio.");
-      return;
-    }
+    if (!validateFields(editingCargue())) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:6012/cargues/${editingCargue().CODIGO_CARGUE}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingCargue()),
-        }
-      );
+      const response = await fetch("http://localhost:6005/cargues", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cargues: [editingCargue()] }),
+      });
 
       if (response.ok) {
         alert("Cargue actualizado exitosamente.");
@@ -114,13 +119,17 @@ export default function Cargues() {
   };
 
   const deleteCargue = async () => {
-    if (!deleteCargueId()) return alert("El ID del cargue es requerido.");
+    if (!deleteCargueId()) {
+      alert("Debe proporcionar un código de cargue para eliminar.");
+      return;
+    }
 
     try {
-      const response = await fetch(
-        `http://localhost:6013/cargues/${deleteCargueId()}`,
-        { method: "DELETE" }
-      );
+      const response = await fetch("http://localhost:6008/cargues", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ CODIGO_CARGUE: [deleteCargueId()] }),
+      });
 
       if (response.ok) {
         alert("Cargue eliminado exitosamente.");
@@ -180,7 +189,7 @@ export default function Cargues() {
       <div class="mb-6">
         <input
           type="text"
-          placeholder="Buscar por código o nombre de cargue..."
+          placeholder="Buscar por ID o nombre de cargue..."
           class="w-full px-4 py-2 border rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-sky-500"
           value={searchQuery()}
           onInput={(e) => setSearchQuery(e.target.value)}
@@ -225,6 +234,226 @@ export default function Cargues() {
           >
             {isLoading() ? "Cargando..." : "Cargar más"}
           </button>
+        </div>
+      )}
+
+      {/* Modales */}
+      {isCreateModalOpen() && (
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div class="bg-white p-6 rounded shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-4">Crear Cargue</h2>
+            <form>
+              <input
+                type="text"
+                placeholder="ID"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={newCargue().CODIGO_CARGUE}
+                onInput={(e) =>
+                  setNewCargue({ ...newCargue(), CODIGO_CARGUE: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Nombre de Carga"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={newCargue().CARGUE}
+                onInput={(e) =>
+                  setNewCargue({ ...newCargue(), CARGUE: e.target.value })
+                }
+              />
+              <input
+                type="date"
+                placeholder="Fecha de Salida"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={newCargue().FECHASALIDACARGUE}
+                onInput={(e) =>
+                  setNewCargue({
+                    ...newCargue(),
+                    FECHASALIDACARGUE: e.target.value, // El valor será YYYY-MM-DD
+                  })
+                }
+              />
+              <input
+                type="time"
+                placeholder="Hora de Salida"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={newCargue().HORA_SALIDA_CARGUE}
+                onInput={(e) =>
+                  setNewCargue({
+                    ...newCargue(),
+                    HORA_SALIDA_CARGUE: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="number"
+                placeholder="Horas de Espera"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={newCargue().HORAS_ESPERA_CARGUE}
+                onInput={(e) =>
+                  setNewCargue({
+                    ...newCargue(),
+                    HORAS_ESPERA_CARGUE: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="number"
+                placeholder="Horas de Carga"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={newCargue().HORAS_CARGUE}
+                onInput={(e) =>
+                  setNewCargue({
+                    ...newCargue(),
+                    HORAS_CARGUE: e.target.value,
+                  })
+                }
+              />
+              <div class="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  class="bg-gray-500 text-white px-4 py-2 rounded"
+                  onClick={() => setCreateModalOpen(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  class="bg-green-500 text-white px-4 py-2 rounded"
+                  onClick={createCargue}
+                >
+                  Crear
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isUpdateModalOpen() && (
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div class="bg-white p-6 rounded shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-4">Actualizar Cargue</h2>
+            <form>
+              <input
+                type="text"
+                placeholder="ID"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={editingCargue().CODIGO_CARGUE}
+                onInput={(e) =>
+                  setEditingCargue({
+                    ...editingCargue(),
+                    CODIGO_CARGUE: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Nombre de Carga"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={editingCargue().CARGUE}
+                onInput={(e) =>
+                  setEditingCargue({ ...editingCargue(), CARGUE: e.target.value })
+                }
+              />
+              <input
+                type="date"
+                placeholder="Fecha de Salida"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={editingCargue().FECHASALIDACARGUE}
+                onInput={(e) =>
+                  setEditingCargue({
+                    ...editingCargue(),
+                    FECHASALIDACARGUE: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="time"
+                placeholder="Hora de Salida"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={editingCargue().HORA_SALIDA_CARGUE}
+                onInput={(e) =>
+                  setEditingCargue({
+                    ...editingCargue(),
+                    HORA_SALIDA_CARGUE: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="number"
+                placeholder="Horas de Espera"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={editingCargue().HORAS_ESPERA_CARGUE}
+                onInput={(e) =>
+                  setEditingCargue({
+                    ...editingCargue(),
+                    HORAS_ESPERA_CARGUE: e.target.value,
+                  })
+                }
+              />
+              <input
+                type="number"
+                placeholder="Horas de Carga"
+                class="w-full px-4 py-2 mb-3 border rounded"
+                value={editingCargue().HORAS_CARGUE}
+                onInput={(e) =>
+                  setEditingCargue({
+                    ...editingCargue(),
+                    HORAS_CARGUE: e.target.value,
+                  })
+                }
+              />
+              <div class="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  class="bg-gray-500 text-white px-4 py-2 rounded"
+                  onClick={() => setUpdateModalOpen(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  class="bg-yellow-500 text-white px-4 py-2 rounded"
+                  onClick={updateCargue}
+                >
+                  Actualizar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isDeleteModalOpen() && (
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div class="bg-white p-6 rounded shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-4">Eliminar Cargue</h2>
+            <p class="mb-3">Introduce el ID del cargue que deseas eliminar:</p>
+            <input
+              type="text"
+              placeholder="ID"
+              class="w-full px-4 py-2 mb-3 border rounded"
+              value={deleteCargueId()}
+              onInput={(e) => setDeleteCargueId(e.target.value)}
+            />
+            <div class="flex justify-end space-x-4">
+              <button
+                type="button"
+                class="bg-gray-500 text-white px-4 py-2 rounded"
+                onClick={() => setDeleteModalOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={deleteCargue}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </main>
