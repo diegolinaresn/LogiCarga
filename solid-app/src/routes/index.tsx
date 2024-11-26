@@ -10,7 +10,7 @@ export default function Home() {
         {/* Mapa de Rutas y Cierres Viales */}
         <div class="bg-white p-4 rounded-lg shadow-md">
           <h2 class="text-2xl text-sky-700 uppercase my-4 font-bold">Mapa de Rutas y Cierres Viales</h2>
-          <div style="height: 525px;">
+          <div style="height: 50%;">
             <MapComponentWithChart />
           </div>
         </div>
@@ -18,7 +18,7 @@ export default function Home() {
         {/* Gráfico de Barras de Pérdidas Económicas */}
         <div class="bg-white p-4 rounded-lg shadow-md">
           <h2 class="text-2xl text-sky-700 uppercase my-4 font-bold">Gráfico de Barras de Pérdidas Económicas</h2>
-          <div style="height: 500px;">
+          <div style="height: 50%;">
             <GraficoPerdidas />
           </div>
         </div>

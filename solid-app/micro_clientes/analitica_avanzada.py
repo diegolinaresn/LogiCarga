@@ -1,12 +1,12 @@
+import matplotlib
+matplotlib.use('Agg')  # Establecer el backend sin GUI
+import matplotlib.pyplot as plt
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import mysql.connector
-import matplotlib.pyplot as plt
 import io
 import base64
 from db_config import DB_CONFIG  # Importar configuración de la base de datos
-
-
 
 app_analitica_avanzada = Flask(__name__)
 CORS(app_analitica_avanzada)
