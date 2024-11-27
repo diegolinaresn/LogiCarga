@@ -9,7 +9,7 @@ const GraficoPerdidas = () => {
       data: {
         labels: ["Ruta 1", "Ruta 2", "Ruta 3"],
         datasets: [{
-          label: "Pérdidas Económicas",
+          label: "Pérdidas Económicas (USD)",
           data: [12000, 19000, 3000],
           backgroundColor: [
             "rgba(255, 99, 132, 0.2)",
@@ -34,7 +34,7 @@ const GraficoPerdidas = () => {
     });
   });
 
-  return <canvas id="barChart" width="120%" height="50%" margin-top="50%"></canvas>;
+  return <canvas id="barChart" width="400" height="400"></canvas>;
 };
 
 export default GraficoPerdidas;
