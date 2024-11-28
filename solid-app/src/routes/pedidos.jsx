@@ -1,4 +1,5 @@
 import { createSignal, createEffect, onMount } from "solid-js";
+import { deleteCarga, getCargas, postCarga, putCarga } from "../api";
 
 export default function Cargues() {
   const [cargues, setCargues] = createSignal([]);
@@ -36,22 +37,21 @@ export default function Cargues() {
 
   const fetchCargues = async (isLoadMore = false) => {
     setIsLoading(true);
-
     try {
-      const url = new URL("http://localhost:6010/cargues");
-      url.searchParams.append("limit", limit);
-      url.searchParams.append("offset", isLoadMore ? offset() : 0);
-      if (searchQuery()) {
-        url.searchParams.append("search", searchQuery());
-      }
+      // const url = new URL("http://localhost:6010/cargues");
+      // url.searchParams.append("limit", limit);
+      // url.searchParams.append("offset", isLoadMore ? offset() : 0);
+      // if (searchQuery()) {
+      //   url.searchParams.append("search", searchQuery());
+      // }
 
-      const response = await fetch(url.toString());
-      const data = await response.json();
+      // const response = await fetch(url.toString());
+      const response = await getCargas(limit, isLoadMore ? offset() : 0, searchQuery());
 
       if (isLoadMore) {
         setCargues([...cargues(), ...data]);
       } else {
-        setCargues(data);
+        setCargues(response);
         setOffset(0);
       }
 
@@ -76,11 +76,13 @@ export default function Cargues() {
     if (!validateFields(newCargue())) return;
 
     try {
-      const response = await fetch("http://localhost:6001/cargues", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cargues: [newCargue()] }),
-      });
+      // const response = await fetch("http://localhost:6001/cargues", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ cargues: [newCargue()] }),
+      // });
+
+      const response = await postCarga(newCargue());
 
       if (response.ok) {
         alert("Cargue creado exitosamente.");
@@ -99,11 +101,13 @@ export default function Cargues() {
     if (!validateFields(editingCargue())) return;
 
     try {
-      const response = await fetch("http://localhost:6005/cargues", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cargues: [editingCargue()] }),
-      });
+      // const response = await fetch("http://localhost:6005/cargues", {
+      //   method: "PUT",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ cargues: [editingCargue()] }),
+      // });
+
+      const response = await putCarga(editingCargue());
 
       if (response.ok) {
         alert("Cargue actualizado exitosamente.");
@@ -125,11 +129,13 @@ export default function Cargues() {
     }
 
     try {
-      const response = await fetch("http://localhost:6008/cargues", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ CODIGO_CARGUE: [deleteCargueId()] }),
-      });
+      // const response = await fetch("http://localhost:6008/cargues", {
+      //   method: "DELETE",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ CODIGO_CARGUE: [deleteCargueId()] }),
+      // });
+
+      const response = await deleteCarga(deleteCargueId());
 
       if (response.ok) {
         alert("Cargue eliminado exitosamente.");

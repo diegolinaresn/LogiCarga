@@ -1,16 +1,19 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { login, logout } from "../components/authstore";
+import { login } from "../components/authstore";
+import { signin, session } from "../utils/api";
 
 // Función para obtener los datos del usuario
 const fetchUserData = async (token: string) => {
   try {
-    const response = await fetch("http://127.0.0.1:5005/users/me", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // const response = await fetch("http://127.0.0.1:5005/users/me", {
+    //   method: "GET",
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // });
+
+    const response = await session(token);
 
     if (!response.ok) {
       throw new Error("Error al obtener datos del usuario");
@@ -25,7 +28,7 @@ const fetchUserData = async (token: string) => {
 };
 
 export default function Login() {
-  const [email, setEmail] = createSignal("");
+  const [username, setUsername] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [error, setError] = createSignal("");
   const [isLoading, setIsLoading] = createSignal(false); // Estado para manejar el loading
@@ -36,14 +39,16 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:5005/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          username: email(),
-          password: password(),
-        }),
-      });
+      // const response = await fetch("http://127.0.0.1:5005/token", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      //   body: new URLSearchParams({
+      //     username: username(),
+      //     password: password(),
+      //   }),
+      // });
+
+      const response = await signin(username(), password());
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -75,10 +80,10 @@ export default function Login() {
           <div class="mb-4">
             <label class="block text-left text-gray-700 font-semibold">Correo Electrónico:</label>
             <input
-              type="email"
+              type="text"
               placeholder="Correo Electrónico"
-              value={email()}
-              onInput={(e) => setEmail(e.currentTarget.value)}
+              value={username()}
+              onInput={(e) => setUsername(e.currentTarget.value)}
               class="w-full p-2 border rounded"
               required
             />

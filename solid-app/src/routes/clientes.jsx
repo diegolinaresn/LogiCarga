@@ -1,4 +1,5 @@
 import { createSignal, createEffect, onMount } from "solid-js";
+import { deleteCliente, getClientes, postCliente, putCliente } from "../api";
 
 export default function Clientes() {
   const [clients, setClients] = createSignal([]);
@@ -40,20 +41,20 @@ export default function Clientes() {
     setIsLoading(true);
 
     try {
-      const url = new URL("http://localhost:7000/api/clients");
-      url.searchParams.append("limit", limit);
-      url.searchParams.append("offset", isLoadMore ? offset() : 0);
-      if (searchQuery()) {
-        url.searchParams.append("search", searchQuery());
-      }
+      // const url = new URL("http://localhost:7000/api/clients");
+      // url.searchParams.append("limit", limit);
+      // url.searchParams.append("offset", isLoadMore ? offset() : 0);
+      // if (searchQuery()) {
+      //   url.searchParams.append("search", searchQuery());
+      // }
 
-      const response = await fetch(url.toString());
-      const data = await response.json();
+      // const response = await fetch(url.toString());
+      const response = await getClientes(limit, isLoadMore ? offset() : 0, searchQuery());
 
       if (isLoadMore) {
         setClients([...clients(), ...data]);
       } else {
-        setClients(data);
+        setClients(response);
         setOffset(0);
       }
 
@@ -67,11 +68,13 @@ export default function Clientes() {
 
   const createClient = async () => {
     try {
-      const response = await fetch("http://localhost:7001/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newClient()),
-      });
+      // const response = await fetch("http://localhost:7001/api/clients", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(newClient()),
+      // });
+
+      const response = await postCliente(newClient());
 
       if (response.ok) {
         alert("Cliente creado exitosamente.");
@@ -100,14 +103,16 @@ export default function Clientes() {
     }
   
     try {
-      const response = await fetch(
-        `http://localhost:7002/api/clients/${clientData.Cliente}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(clientData),
-        }
-      );
+      // const response = await fetch(
+      //   `http://localhost:7002/api/clients/${clientData.Cliente}`,
+      //   {
+      //     method: "PUT",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(clientData),
+      //   }
+      // );
+
+      const response = await putCliente(clientData);
   
       if (response.ok) {
         alert("Cliente actualizado exitosamente.");
@@ -126,10 +131,12 @@ export default function Clientes() {
   const deleteClient = async () => {
     if (!deleteClientId()) return alert("ID del cliente es requerido.");
     try {
-      const response = await fetch(
-        `http://localhost:7003/api/clients/${deleteClientId()}`,
-        { method: "DELETE" }
-      );
+      // const response = await fetch(
+      //   `http://localhost:7003/api/clients/${deleteClientId()}`,
+      //   { method: "DELETE" }
+      // );
+
+      const response = await deleteCliente(deleteClientId());
 
       if (response.ok) {
         alert("Cliente eliminado exitosamente.");
