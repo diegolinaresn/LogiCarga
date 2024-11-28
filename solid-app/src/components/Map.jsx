@@ -1,4 +1,6 @@
 import { createSignal, onMount } from "solid-js";
+import { getTramos, getVias, getRuta } from "../utils/api.js";
+
 
 const MapComponentWithChart = () => {
   let map; // Google Maps instance
@@ -27,104 +29,97 @@ const MapComponentWithChart = () => {
     }
 
     map = new google.maps.Map(mapContainer, {
-      zoom: 6, // Set a moderate zoom level
-      center: { lat: 4.711, lng: -74.0721 }, // Default center: Bogotá, Colombia
-      mapTypeId: "roadmap", // Roadmap view
+      zoom: 6,
+      center: { lat: 4.711, lng: -74.0721 },
+      mapTypeId: "roadmap",
     });
 
-    // Initialize the DirectionsRenderer
     directionsRenderer = new google.maps.DirectionsRenderer({
       map: map,
-      suppressMarkers: true, // We will use custom markers
+      suppressMarkers: true,
     });
   };
 
   // Fetch available tramos from the backend
   const fetchTramos = async () => {
     try {
-      const response = await fetch("http://localhost:5001/map/tramos");
-      const data = await response.json();
-      setTramos(data.tramos || []);
-      console.log("Fetched tramos:", data.tramos);
+        const data = await getTramos();
+        setTramos(data.tramos || []);
+        console.log("Fetched tramos:", data.tramos);
     } catch (error) {
-      console.error("Error fetching tramos data:", error);
+        console.error("Error fetching tramos data:", error);
     }
-  };
+};
+
 
   // Fetch affected roads for the selected tramo
   const fetchViasAfectadas = async () => {
-    try {
-      const response = await fetch(`http://localhost:5001/map/vias?tramo_id=${routeId()}`);
-      const data = await response.json();
-
-      if (data.vias) {
-        setViasAfectadas(data.vias);
-      } else {
-        setViasAfectadas([]);
-        alert(`No se encontraron vías afectadas para el tramo ${routeId()}.`);
-      }
-    } catch (error) {
-      console.error("Error fetching affected roads:", error);
+    if (!routeId()) {
+        alert("Por favor, selecciona un ID de tramo.");
+        return;
     }
-  };
+
+    try {
+        const data = await getVias(routeId());
+        if (data.vias) {
+            setViasAfectadas(data.vias);
+        } else {
+            setViasAfectadas([]);
+            alert(`No se encontraron vías afectadas para el tramo ${routeId()}.`);
+        }
+    } catch (error) {
+        console.error("Error fetching affected roads:", error);
+    }
+};
+
 
   // Fetch route data from the API
   const fetchRouteData = async () => {
     if (!routeId()) {
-      alert("Por favor, selecciona un ID de tramo.");
-      return;
+        alert("Por favor, selecciona un ID de tramo.");
+        return;
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/map?route_id=${routeId()}`);
-      const data = await response.json();
+        const data = await getRuta(routeId()); // Llama a la función que hace la solicitud
+        if (data && data.route) {
+            const route = data.route;
+            setDuration(route.duration);
+            setRouteData(route);
 
-      if (data.route) {
-        const route = data.route;
-        setDuration(route.duration);
-        setRouteData(route);
+            // Calcula el costo de combustible
+            const distanceInKm = parseFloat(route.distance.split(" ")[0]);
+            const fuelUsed = distanceInKm * FUEL_CONSUMPTION_PER_KM;
+            const cost = fuelUsed * FUEL_PRICE_PER_LITER * 2;
+            setFuelCost(cost.toFixed(2));
 
-        // Calculate fuel cost
-        const distanceInKm = parseFloat(route.distance.split(" ")[0]); // Extract numerical value
-        const fuelUsed = distanceInKm * FUEL_CONSUMPTION_PER_KM; // Liters used
-        const cost = fuelUsed * FUEL_PRICE_PER_LITER * 2; // Total cost
-        setFuelCost(cost.toFixed(2)); // Round to 2 decimals
+            clearPreviousRoute();
 
-        // Clear previous route and marker
-        clearPreviousRoute();
+            if (route.steps && route.steps.length > 0) {
+                const startPoint = route.steps[0];
+                map.setCenter(new google.maps.LatLng(startPoint.lat, startPoint.lng));
+            }
 
-        // Set map center to starting point
-        if (route.steps && route.steps.length > 0) {
-          const startPoint = route.steps[0];
-          map.setCenter(new google.maps.LatLng(startPoint.lat, startPoint.lng));
+            renderRoute(route);
+            simulateVehicle(route.steps);
+            fetchViasAfectadas();
+        } else {
+            console.error("API Error: Respuesta no válida", data);
+            alert("No se pudo obtener la ruta. Verifica el ID del tramo.");
         }
-
-        // Render the route on the map
-        renderRoute(route);
-
-        // Simulate vehicle movement
-        simulateVehicle(route.steps);
-
-        // Fetch affected roads
-        fetchViasAfectadas();
-      } else if (data.error) {
-        console.error("API Error:", data.error);
-        alert(`Error al obtener la ruta: ${data.error}`);
-      }
     } catch (error) {
-      console.error("Error fetching route data:", error);
+        console.error("Error fetching route data:", error);
+        alert("Error al obtener la ruta. Verifica la consola para más detalles.");
     }
-  };
+};
+
+
 
   // Clear previous route and marker
   const clearPreviousRoute = () => {
-    if (directionsRenderer) {
-      directionsRenderer.setMap(null); // Remove previous route
-    }
-    if (vehicleMarker) {
-      vehicleMarker.setMap(null); // Remove vehicle marker
-    }
-    clearInterval(stepInterval); // Stop vehicle movement
+    if (directionsRenderer) directionsRenderer.setMap(null);
+    if (vehicleMarker) vehicleMarker.setMap(null);
+    clearInterval(stepInterval);
   };
 
   // Render the route on the map
@@ -133,7 +128,7 @@ const MapComponentWithChart = () => {
 
     directionsRenderer = new google.maps.DirectionsRenderer({
       map: map,
-      suppressMarkers: false, // Allow default markers
+      suppressMarkers: false,
     });
 
     const start = new google.maps.LatLng(
@@ -148,12 +143,12 @@ const MapComponentWithChart = () => {
     const request = {
       origin: start,
       destination: end,
-      travelMode: google.maps.TravelMode.DRIVING, // Driving mode
+      travelMode: google.maps.TravelMode.DRIVING,
     };
 
     directionsService.route(request, (response, status) => {
       if (status === "OK") {
-        directionsRenderer.setDirections(response); // Draw route on map
+        directionsRenderer.setDirections(response);
       } else {
         console.error("Directions request failed:", status);
       }
@@ -163,7 +158,7 @@ const MapComponentWithChart = () => {
   // Simulate vehicle movement along the steps
   const simulateVehicle = (steps) => {
     vehicleMarker = new google.maps.Marker({
-      position: { lat: 0, lng: 0 }, // Placeholder
+      position: { lat: 0, lng: 0 },
       map: map,
       title: "Vehicle",
       icon: {
