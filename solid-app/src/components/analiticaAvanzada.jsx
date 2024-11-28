@@ -1,5 +1,6 @@
 import { createSignal, onMount } from "solid-js";
 import Chart from "chart.js/auto";
+import {getEfficiencyPrivate,getEconomicLossPrivate,getRiskAnalysisPrivate } from "../utils/api.js";
 
 export default function AnaliticaAvanzada() {
   let efficiencyChartCanvas, economicLossChartCanvas, mapContainer;
@@ -11,35 +12,45 @@ export default function AnaliticaAvanzada() {
   // Fetch data from /analytics/delivery_efficiency
   const fetchDeliveryEfficiency = async () => {
     try {
-      const response = await fetch("http://localhost:5011/analytics/delivery_efficiency");
-      const data = await response.json();
-      setDeliveryEfficiencyData(data.delivery_efficiency || []);
+      const data = await getEfficiencyPrivate(); // Llamada directa a la función en api.js
+      if (data?.delivery_efficiency && Array.isArray(data.delivery_efficiency)) {
+        setDeliveryEfficiencyData(data.delivery_efficiency); // Asegúrate de procesar `delivery_efficiency`
+      } else {
+        console.warn("Formato incorrecto para datos de eficiencia:", data);
+      }
     } catch (error) {
       console.error("Error fetching delivery efficiency data:", error);
     }
   };
+  
 
-  // Fetch data from /analytics/economic_losses
   const fetchEconomicLosses = async () => {
     try {
-      const response = await fetch("http://localhost:5011/analytics/economic_losses");
-      const data = await response.json();
-      setEconomicLossData(data.economic_losses || {});
+      const data = await getEconomicLossPrivate(); // Llamada directa a la función en api.js
+      if (data?.economic_losses && typeof data.economic_losses === "object") {
+        setEconomicLossData(data.economic_losses); // Asegúrate de procesar `economic_losses`
+      } else {
+        console.warn("Formato incorrecto para datos de pérdidas económicas:", data);
+      }
     } catch (error) {
       console.error("Error fetching economic losses data:", error);
     }
   };
+  
 
-  // Fetch data from /analytics/risk_heatmap
   const fetchRiskHeatmap = async () => {
     try {
-      const response = await fetch("http://localhost:5011/analytics/risk_heatmap");
-      const data = await response.json();
-      setRiskHeatmapData(data.heatmap_data || []);
+      const data = await getRiskAnalysisPrivate();
+      if (data?.heatmap_data) { // Ajusta según el formato real devuelto
+        setRiskHeatmapData(data.heatmap_data);
+      } else {
+        console.warn("Formato incorrecto para datos de mapa de calor:", data);
+      }
     } catch (error) {
       console.error("Error fetching risk heatmap data:", error);
     }
   };
+
 
   const loadGoogleMapsScript = (callback) => {
     const existingScript = document.getElementById("googleMaps");

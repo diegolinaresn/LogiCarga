@@ -62,60 +62,105 @@ const putCarga = async (CODIGO_CARGUE) => {
 }
 
 // CLIENTES /////////////////////////////////////////////////////////////////////////////////
-const deleteCliente = async (id_cliente) => {
+const deleteCliente = async (idCliente) => {
     try {
-        const response = await fetch(`http://${IP}:7003/api/clientes/${id_cliente}`, {
-            method: 'DELETE'
+        const response = await fetch(`http://${IP}:7003/api/clientes/${idCliente}`, {
+            method: 'DELETE',
         });
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error al obtener los datos del backend:', error);
-    }
-}
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Error eliminando el cliente.");
+        }
 
-const getClientes = async () => {
+        return { message: "Cliente eliminado exitosamente." };
+    } catch (error) {
+        console.error("Error al eliminar el cliente:", error);
+        throw error;
+    }
+};
+
+
+
+
+const getClientes = async ({ limit = 20000, offset = 0, search = "" } = {}) => {
     try {
-        const response = await fetch(`http://${IP}:7000/api/clientes`, {
-            method: 'GET'
+        const url = new URL(`http://${IP}:7000/api/clientes`);
+
+        // Agregar los parámetros a la URL
+        url.searchParams.append("limit", limit);
+        url.searchParams.append("offset", offset);
+        if (search) {
+            url.searchParams.append("search", search);
+        }
+
+        // Realizar la solicitud GET
+        const response = await fetch(url.toString(), {
+            method: 'GET',
         });
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error al obtener los datos del backend:', error);
-    }
-}
+        // Manejar la respuesta
+        if (!response.ok) {
+            throw new Error(`Error al obtener clientes: ${response.statusText}`);
+        }
 
-const postCliente = async () => {
+        const data = await response.json();
+        return data; // Retorna los datos obtenidos
+    } catch (error) {
+        console.error("Error fetching clients:", error);
+        throw error; // Lanza el error para manejo posterior
+    }
+};
+
+
+const postCliente = async (clienteData) => {
     try {
         const response = await fetch(`http://${IP}:7001/api/clientes`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json', // Asegura que el servidor reciba JSON
+            },
+            body: JSON.stringify(clienteData), // Convierte los datos del cliente a JSON
         });
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error al obtener los datos del backend:', error);
-    }
-}
+        // Manejar la respuesta
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Error al crear cliente: ${errorData.error || response.statusText}`);
+        }
 
-const putCliente = async (id_cliente) => {
+        const data = await response.json();
+        return data; // Retorna la respuesta del servidor
+    } catch (error) {
+        console.error("Error creating client:", error);
+        throw error; // Lanza el error para manejo posterior
+    }
+};
+
+
+const putCliente = async (id_cliente, updatedData) => {
     try {
-        const response = await fetch(`http://${IP}:7002/api/clientes/${id_cliente}`, {
-            method: 'PUT'
+        const response = await fetch(`http://${IP}:7002/api/clientes`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ...updatedData, Cliente: id_cliente }), // Incluye el ID del cliente en los datos
         });
 
+        // Manejar la respuesta
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Error al actualizar cliente: ${errorData.error || response.statusText}`);
+        }
+
         const data = await response.json();
-        return data;
+        return data; // Retorna la respuesta del servidor
     } catch (error) {
-        console.error('Error al obtener los datos del backend:', error);
+        console.error("Error updating client:", error);
+        throw error; // Lanza el error para manejo posterior
     }
-}
+};
 
 // MAPA /////////////////////////////////////////////////////////////////////////////////
 const getTramos = async () => {

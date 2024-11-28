@@ -2,7 +2,13 @@ import { createSignal, createEffect, Show, onMount } from "solid-js"; // Asegúr
 import Chart from "chart.js/auto";
 import AnaliticaAvanzada from "~/components/analiticaAvanzada";
 import { isLoggedIn } from "../components/authstore"; // Asegúrate de importar tu estado de autenticación global
+import {
+    getEfficiencyPublic,
+    getEconomicLossPublic,
+    getRiskAnalysisPublic,
+  } from "../utils/api.js";
 
+  
 export default function Analitica() {
 let efficiencyChartCanvas, economicLossChartCanvas, riskAnalysisChartCanvas;
 
@@ -13,50 +19,48 @@ const [hydrated, setHydrated] = createSignal(false); // Evitar inconsistencias i
 
 let efficiencyChart, economicLossChart, riskAnalysisChart;
 
-// Fetch data for efficiency chart
+// Fetch efficiency data
 const fetchEfficiencyData = async () => {
-try {
-const response = await fetch(`http://localhost:5010/analytics/efficiency`);
-const data = await response.json();
-if (data.top_5_efficient_months) {
-setEfficiencyData(data.top_5_efficient_months);
-} else {
-console.warn("No se encontraron datos de eficiencia.");
-}
-} catch (error) {
-console.error("Error al obtener datos de eficiencia:", error);
-}
-};
-
-// Fetch data for economic loss chart
-const fetchEconomicLossData = async () => {
-try {
-const response = await fetch(`http://localhost:5010/analytics/economic_loss`);
-const data = await response.json();
-if (data.top_5_losses) {
-setEconomicLossData(data.top_5_losses);
-} else {
-console.warn("No se encontraron datos de pérdidas económicas.");
-}
-} catch (error) {
-console.error("Error al obtener datos de pérdidas económicas:", error);
-}
-};
-
-// Fetch data for risk analysis chart
-const fetchRiskAnalysisData = async () => {
-try {
-const response = await fetch(`http://localhost:5010/analytics/risk_analysis`);
-const data = await response.json();
-if (data.top_5_risks) {
-setRiskAnalysisData(data.top_5_risks);
-} else {
-console.warn("No se encontraron datos de análisis de riesgos.");
-}
-} catch (error) {
-console.error("Error al obtener datos de análisis de riesgos:", error);
-}
-};
+    try {
+      const data = await getEfficiencyPublic(); // Usa la función de api.js
+      if (data && data.top_5_efficient_months) {
+        setEfficiencyData(data.top_5_efficient_months);
+      } else {
+        console.warn("No se encontraron datos de eficiencia.");
+      }
+    } catch (error) {
+      console.error("Error al obtener datos de eficiencia:", error);
+    }
+  };
+  
+  // Fetch economic loss data
+  const fetchEconomicLossData = async () => {
+    try {
+      const data = await getEconomicLossPublic(); // Usa la función de api.js
+      if (data && data.top_5_losses) {
+        setEconomicLossData(data.top_5_losses);
+      } else {
+        console.warn("No se encontraron datos de pérdidas económicas.");
+      }
+    } catch (error) {
+      console.error("Error al obtener datos de pérdidas económicas:", error);
+    }
+  };
+  
+  // Fetch risk analysis data
+  const fetchRiskAnalysisData = async () => {
+    try {
+      const data = await getRiskAnalysisPublic(); // Usa la función de api.js
+      if (data && data.top_5_risks) {
+        setRiskAnalysisData(data.top_5_risks);
+      } else {
+        console.warn("No se encontraron datos de análisis de riesgos.");
+      }
+    } catch (error) {
+      console.error("Error al obtener datos de análisis de riesgos:", error);
+    }
+  };
+  
 
 const updateCharts = () => {
 // Destroy existing charts if they exist

@@ -1,4 +1,5 @@
 import { createSignal, createEffect, onMount } from "solid-js";
+import { getClientes, postCliente, putCliente, deleteCliente } from "../utils/api.js";
 
 export default function Clientes() {
   const [clients, setClients] = createSignal([]);
@@ -40,109 +41,73 @@ export default function Clientes() {
     setIsLoading(true);
 
     try {
-      const url = new URL("http://localhost:7000/api/clients");
-      url.searchParams.append("limit", limit);
-      url.searchParams.append("offset", isLoadMore ? offset() : 0);
-      if (searchQuery()) {
-        url.searchParams.append("search", searchQuery());
-      }
-
-      const response = await fetch(url.toString());
-      const data = await response.json();
-
-      if (isLoadMore) {
-        setClients([...clients(), ...data]);
-      } else {
-        setClients(data);
-        setOffset(0);
-      }
-
-      setHasMore(data.length === limit);
+        const data = await getClientes({
+            limit: limit,
+            offset: isLoadMore ? offset() : 0,
+            search: searchQuery(),
+        });
+        if (isLoadMore) {
+            setClients([...clients(), ...data]);
+        } else {
+            setClients(data);
+            setOffset(0);
+        }
+        setHasMore(data.length === limit);
     } catch (error) {
-      console.error("Error fetching clients:", error);
+        console.error("Error fetching clients:", error);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
-  const createClient = async () => {
-    try {
-      const response = await fetch("http://localhost:7001/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newClient()),
-      });
+const createClient = async () => {
+  try {
+      const data = await postCliente(newClient()); // Llama a la función del API
+      alert("Cliente creado exitosamente.");
+      fetchClients(); // Actualiza la lista de clientes
+      setCreateModalOpen(false); // Cierra el modal
+  } catch (error) {
+      alert(`Error al crear cliente: ${error.message}`);
+  }
+};
 
-      if (response.ok) {
-        alert("Cliente creado exitosamente.");
-        fetchClients();
-        setCreateModalOpen(false);
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
-      }
-    } catch (error) {
-      console.error("Error creating client:", error);
-    }
-  };
 
-  const updateClient = async () => {
-    const clientData = Object.fromEntries(
+const updateClient = async () => {
+  const clientData = Object.fromEntries(
       Object.entries(editingClient()).map(([key, value]) => [
-        key,
-        typeof value === "string" ? value.trim() : value, // Aplica trim aquí
+          key,
+          typeof value === "string" ? value.trim() : value, // Aplica trim aquí
       ])
-    );
-  
-    if (!clientData.Cliente) {
+  );
+
+  if (!clientData.Cliente) {
       alert("El ID del cliente es obligatorio.");
       return;
-    }
-  
-    try {
-      const response = await fetch(
-        `http://localhost:7002/api/clients/${clientData.Cliente}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(clientData),
-        }
-      );
-  
-      if (response.ok) {
-        alert("Cliente actualizado exitosamente.");
-        fetchClients();
-        setUpdateModalOpen(false);
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
-      }
-    } catch (error) {
-      console.error("Error updating client:", error);
-    }
-  };
+  }
+
+  try {
+      const data = await putCliente(clientData.Cliente, clientData); // Llama a la función del API
+      alert("Cliente actualizado exitosamente.");
+      fetchClients(); // Actualiza la lista de clientes
+      setUpdateModalOpen(false); // Cierra el modal
+  } catch (error) {
+      alert(`Error al actualizar cliente: ${error.message}`);
+  }
+};
   
 
-  const deleteClient = async () => {
-    if (!deleteClientId()) return alert("ID del cliente es requerido.");
-    try {
-      const response = await fetch(
-        `http://localhost:7003/api/clients/${deleteClientId()}`,
-        { method: "DELETE" }
-      );
+const deleteClient = async () => {
+  if (!deleteClientId()) return alert("ID del cliente es requerido.");
+  try {
+      await deleteCliente(deleteClientId()); // Llama a la función en api.js
+      alert("Cliente eliminado exitosamente.");
+      fetchClients(); // Recarga la lista de clientes
+      setDeleteModalOpen(false); // Cierra el modal
+  } catch (error) {
+      alert(`Error al eliminar cliente: ${error.message}`);
+  }
+};
 
-      if (response.ok) {
-        alert("Cliente eliminado exitosamente.");
-        fetchClients();
-        setDeleteModalOpen(false);
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
-      }
-    } catch (error) {
-      console.error("Error deleting client:", error);
-    }
-  };
 
   const loadMoreClients = () => {
     if (hasMore()) {
