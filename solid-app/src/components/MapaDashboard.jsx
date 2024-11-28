@@ -1,328 +1,205 @@
 import { createSignal, onMount } from "solid-js";
+import { getTramosAll } from "../utils/api.js";
 
-const MapComponentWithChart = () => {
+const DashboardComponentWithGoogleMaps = () => {
   let map; // Google Maps instance
-  let vehicleMarker; // Marker for the vehicle
-  let stepInterval; // Interval for vehicle movement
-  let mapContainer; // Reference to the map div container
-  let directionsRenderer; // Renderer for displaying the route on the map
+  let mapContainer; // Reference to the map container
 
-  const [duration, setDuration] = createSignal("Loading...");
-  const [routeData, setRouteData] = createSignal(null);
-  const [routeId, setRouteId] = createSignal(""); // Signal for the selected route ID
-  const [tramos, setTramos] = createSignal([]); // Signal for cod_tramo options
-  const [viasAfectadas, setViasAfectadas] = createSignal([]); // Signal for affected roads
-  const [fuelCost, setFuelCost] = createSignal(0); // Signal for fuel cost
-  const [isLoadingMap, setIsLoadingMap] = createSignal(true); // Nuevo estado para el indicador de carga del mapa
+  const [tramos, setTramos] = createSignal([]); // List of tramos with coordinates
 
-  // Constants for fuel calculation
-  const FUEL_PRICE_PER_LITER = 26; // MXN per liter
-  const FUEL_CONSUMPTION_PER_KM = 0.12; // Liters per km (assume 12 km/L efficiency)
+  const API_KEY = "AIzaSyDTziMJXD_LXeJlxN2c8fZSsLWY65m3VHg"; // Your Google Maps API key
 
-  // Define closures with their locations and severities
-  const closures = [
-    {
-      start: { lat: 4.711, lng: -74.0721 },
-      end: { lat: 4.712, lng: -74.0731 },
-      severity: "high",
-      description: "Cierre vial severo",
-    },
-    {
-      start: { lat: 4.713, lng: -74.0741 },
-      end: { lat: 4.714, lng: -74.0751 },
-      severity: "medium",
-      description: "Cierre vial moderado",
-    },
-    {
-      start: { lat: 4.715, lng: -74.0761 },
-      end: { lat: 4.716, lng: -74.0771 },
-      severity: "low",
-      description: "Cierre vial leve",
-    },
-    {
-      start: { lat: 4.717, lng: -74.0781 },
-      end: { lat: 4.718, lng: -74.0791 },
-      severity: "high",
-      description: "Cierre vial severo",
-    },
-    {
-      start: { lat: 4.719, lng: -74.0801 },
-      end: { lat: 4.720, lng: -74.0811 },
-      severity: "medium",
-      description: "Cierre vial moderado",
-    },
-    {
-      start: { lat: 4.721, lng: -74.0821 },
-      end: { lat: 4.722, lng: -74.0831 },
-      severity: "low",
-      description: "Cierre vial leve",
-    },
-  ];
+  // Fetch tramos and convert names to coordinates
+  const fetchTramosWithCoordinates = async () => {
+    try {
+      const data = await getTramosAll();
+      if (data?.tramos) {
+        const convertedTramos = await Promise.all(
+          data.tramos.map(async (tramo) => {
+            const { startLocation, endLocation } = parseTramoName(tramo.tramo);
+            const startCoords = await getCoordinatesFromName(startLocation);
+            const endCoords = await getCoordinatesFromName(endLocation || getRandomLocation());
+            return { ...tramo, startCoords, endCoords };
+          })
+        );
+        setTramos(convertedTramos);
+        plotAllTramosOnMap(convertedTramos); // Plot all tramos once data is ready
+      }
+    } catch (error) {
+      console.error("Error fetching tramos:", error);
+    }
+  };
 
-  // Initialize the Google Map
-  const initMap = () => {
+  // Parse tramo name to extract start and end locations
+  const parseTramoName = (tramoName) => {
+    const parts = tramoName.split(" - ");
+    if (parts.length === 2) {
+      return {
+        startLocation: `${parts[0]} Colombia`,
+        endLocation: `${parts[1]} Colombia`,
+      };
+    }
+    console.warn(`Tramo name "${tramoName}" does not follow expected format.`);
+    return {
+      startLocation: `${tramoName} Colombia`,
+      endLocation: null, // Handle single location cases
+    };
+  };
+
+  // Get a random location in Colombia for fallback
+  const getRandomLocation = () => {
+    const randomCities = [
+      "Bogotá",
+      "Medellín",
+      "Cali",
+      "Cartagena",
+      "Barranquilla",
+      "Bucaramanga",
+    ];
+    const randomCity = randomCities[Math.floor(Math.random() * randomCities.length)];
+    return `${randomCity} Colombia`;
+  };
+
+  // Get coordinates for a location name using Geocoding API
+  const getCoordinatesFromName = async (locationName) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          locationName
+        )}&key=${API_KEY}`
+      );
+      const data = await response.json();
+      if (data.status === "OK" && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+        return { lat: location.lat, lng: location.lng };
+      } else {
+        console.warn(`No coordinates found for ${locationName}`);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching coordinates:", error);
+      return null;
+    }
+  };
+
+  // Initialize Google Map
+  const initGoogleMap = () => {
     if (!window.google) {
       console.error("Google Maps API failed to load.");
       return;
     }
-
     map = new google.maps.Map(mapContainer, {
-      zoom: 14, // Set a higher zoom level
-      center: { lat: 4.713, lng: -74.0741 }, // Center around the closures
-      mapTypeId: "roadmap", // Roadmap view
-    });
-
-    // Initialize the DirectionsRenderer
-    directionsRenderer = new google.maps.DirectionsRenderer({
-      map: map,
-      suppressMarkers: true, // We will use custom markers
-    });
-
-    // Add closure routes to the map
-    closures.forEach((closure) => {
-      const directionsService = new google.maps.DirectionsService();
-      const request = {
-        origin: closure.start,
-        destination: closure.end,
-        travelMode: google.maps.TravelMode.DRIVING,
-      };
-
-      directionsService.route(request, (response, status) => {
-        if (status === "OK") {
-          const polyline = new google.maps.Polyline({
-            path: response.routes[0].overview_path,
-            geodesic: true,
-            strokeColor:
-              closure.severity === "high"
-                ? "#FF0000"
-                : closure.severity === "medium"
-                ? "#FFA500"
-                : "#FFFF00",
-            strokeOpacity: 1.0,
-            strokeWeight: 4,
-          });
-
-          polyline.setMap(map);
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: `<div><strong>${closure.description}</strong></div>`,
-          });
-
-          polyline.addListener("click", (event) => {
-            infoWindow.setPosition(event.latLng);
-            infoWindow.open(map);
-          });
-        } else {
-          console.error("Directions request failed:", status);
-        }
-      });
+      zoom: 6,
+      center: { lat: 4.711, lng: -74.0721 },
+      mapTypeId: "roadmap",
+      disableDefaultUI: true, // Disable default UI
     });
   };
 
-  // Fetch available tramos from the backend
-  const fetchTramos = async () => {
-    try {
-      const response = await fetch("http://localhost:5001/map/tramos");
-      const data = await response.json();
-      setTramos(data.tramos || []);
-      console.log("Fetched tramos:", data.tramos);
-    } catch (error) {
-      console.error("Error fetching tramos data:", error);
-    }
-  };
-
-  // Fetch affected roads for the selected tramo
-  const fetchViasAfectadas = async () => {
-    try {
-      const response = await fetch(`http://localhost:5001/map/vias?tramo_id=${routeId()}`);
-      const data = await response.json();
-
-      if (data.vias) {
-        setViasAfectadas(data.vias);
+  // Plot all tramos on the map
+  const plotAllTramosOnMap = (tramos) => {
+    tramos.forEach((tramo) => {
+      if (tramo.startCoords && tramo.endCoords) {
+        addMarkersForTramo(tramo.startCoords, tramo.endCoords, tramo.tramo);
+        plotTramoRoute(tramo.startCoords, tramo.endCoords, tramo);
       } else {
-        setViasAfectadas([]);
-        alert(`No se encontraron vías afectadas para el tramo ${routeId()}.`);
+        console.warn(
+          `Cannot plot tramo ${tramo.tramo}: Missing start or end coordinates`
+        );
       }
-    } catch (error) {
-      console.error("Error fetching affected roads:", error);
-    }
+    });
   };
 
-  // Fetch route data from the API
-  const fetchRouteData = async () => {
-    if (!routeId()) {
-      alert("Por favor, selecciona un ID de tramo.");
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:5001/map?route_id=${routeId()}`);
-      const data = await response.json();
-
-      if (data.route) {
-        const route = data.route;
-        setDuration(route.duration);
-        setRouteData(route);
-
-        // Calculate fuel cost
-        const distanceInKm = parseFloat(route.distance.split(" ")[0]); // Extract numerical value
-        const fuelUsed = distanceInKm * FUEL_CONSUMPTION_PER_KM; // Liters used
-        const cost = fuelUsed * FUEL_PRICE_PER_LITER; // Total cost
-        setFuelCost(cost.toFixed(2)); // Round to 2 decimals
-
-        // Clear previous route and marker
-        clearPreviousRoute();
-
-        // Set map center to starting point
-        if (route.steps && route.steps.length > 0) {
-          const startPoint = route.steps[0];
-          map.setCenter(new google.maps.LatLng(startPoint.lat, startPoint.lng));
-        }
-
-        // Render the route on the map
-        renderRoute(route);
-
-        // Simulate vehicle movement
-        simulateVehicle(route.steps);
-
-        // Fetch affected roads
-        fetchViasAfectadas();
-      } else if (data.error) {
-        console.error("API Error:", data.error);
-        alert(`Error al obtener la ruta: ${data.error}`);
-      }
-    } catch (error) {
-      console.error("Error fetching route data:", error);
-    }
-  };
-
-  // Clear previous route and marker
-  const clearPreviousRoute = () => {
-    if (directionsRenderer) {
-      directionsRenderer.setMap(null); // Remove previous route
-    }
-    if (vehicleMarker) {
-      vehicleMarker.setMap(null); // Remove vehicle marker
-    }
-    clearInterval(stepInterval); // Stop vehicle movement
-  };
-
-  // Render the route on the map
-  const renderRoute = (routeData) => {
-    const directionsService = new google.maps.DirectionsService();
-
-    directionsRenderer = new google.maps.DirectionsRenderer({
-      map: map,
-      suppressMarkers: false, // Allow default markers
+  // Add markers for the start and end points of a tramo
+  const addMarkersForTramo = (startCoords, endCoords, tramoName) => {
+    // Marker for start point
+    new google.maps.Marker({
+      position: new google.maps.LatLng(startCoords.lat, startCoords.lng),
+      map,
+      title: `Inicio: ${tramoName}`,
+      icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
     });
 
-    const start = new google.maps.LatLng(
-      parseFloat(routeData.steps[0].lat),
-      parseFloat(routeData.steps[0].lng)
-    );
-    const end = new google.maps.LatLng(
-      parseFloat(routeData.steps[routeData.steps.length - 1].lat),
-      parseFloat(routeData.steps[routeData.steps.length - 1].lng)
-    );
+    // Marker for end point
+    new google.maps.Marker({
+      position: new google.maps.LatLng(endCoords.lat, endCoords.lng),
+      map,
+      title: `Fin: ${tramoName}`,
+      icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+    });
+  };
+
+  // Generate route color based on length_km
+  const getRouteColor = (lengthKm) => {
+    if (lengthKm > 100) return "#FF0000"; // Red for long routes
+    if (lengthKm > 50) return "#FFA500"; // Orange for medium routes
+    return "#00FF00"; // Green for short routes
+  };
+
+  // Plot a single tramo route on the map
+  const plotTramoRoute = (startCoords, endCoords, tramo) => {
+    const directionsService = new google.maps.DirectionsService();
+    const routeColor = getRouteColor(tramo.length_km);
 
     const request = {
-      origin: start,
-      destination: end,
-      travelMode: google.maps.TravelMode.DRIVING, // Driving mode
+      origin: new google.maps.LatLng(startCoords.lat, startCoords.lng),
+      destination: new google.maps.LatLng(endCoords.lat, endCoords.lng),
+      travelMode: google.maps.TravelMode.DRIVING,
     };
 
-    directionsService.route(request, (response, status) => {
+    directionsService.route(request, (result, status) => {
       if (status === "OK") {
-        directionsRenderer.setDirections(response); // Draw route on map
+        const directionsRenderer = new google.maps.DirectionsRenderer({
+          map,
+          suppressMarkers: true,
+          polylineOptions: { strokeColor: routeColor, strokeWeight: 5 },
+        });
+
+        // Create InfoWindow
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div>
+              <h4>${tramo.tramo}</h4>
+              <p>Longitud: ${tramo.length_km} km</p>
+            </div>
+          `,
+        });
+
+        directionsRenderer.addListener("click", () => {
+          infoWindow.open(map);
+        });
+
+        directionsRenderer.setDirections(result);
       } else {
         console.error("Directions request failed:", status);
       }
     });
   };
 
-  // Simulate vehicle movement along the steps
-  const simulateVehicle = (steps) => {
-    vehicleMarker = new google.maps.Marker({
-      position: { lat: 0, lng: 0 }, // Placeholder
-      map: map,
-      title: "Vehicle",
-      icon: {
-        url: "https://maps.gstatic.com/mapfiles/ms2/micons/cabs.png",
-        scaledSize: new google.maps.Size(30, 30),
-      },
-    });
-
-    let currentStep = 0;
-
-    stepInterval = setInterval(() => {
-      if (currentStep < steps.length) {
-        const step = steps[currentStep];
-        if (step.lat && step.lng) {
-          vehicleMarker.setPosition(new google.maps.LatLng(step.lat, step.lng));
-        } else {
-          console.error("Invalid step coordinates:", step);
-        }
-        currentStep++;
-      } else {
-        clearInterval(stepInterval);
-      }
-    }, 1000);
-  };
-
-  // Load Google Maps and fetch data
+  // Initialize the component
   onMount(() => {
-    fetchTramos();
-
-    const loadGoogleMaps = () => {
-      if (window.google) {
-        initMap();
-      } else {
-        console.error("Google Maps API not loaded.");
-      }
-    };
+    fetchTramosWithCoordinates();
 
     if (window.google) {
-      loadGoogleMaps();
+      initGoogleMap();
     } else {
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDTziMJXD_LXeJlxN2c8fZSsLWY65m3VHg`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}`;
       script.async = true;
-      script.defer = true;
-      script.onload = loadGoogleMaps;
-      script.onerror = () => console.error("Failed to load Google Maps API.");
+      script.onload = initGoogleMap;
       document.head.appendChild(script);
     }
   });
 
   return (
-    <div style="font-family: 'Poppins', sans-serif;">
-      <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-        <div
-          id="map"
-          ref={(el) => (mapContainer = el)}
-          style="height: 400px; width: 100%; border-radius: 10px; margin: 20px 0; flex: 1;"
-        ></div>
-      </div>
-      
-      <div>
-        <h2 style="font-size: 24px; font-weight: bold; color: #0056b3; margin-bottom: 20px;">Simbología</h2>
-        <ul style="list-style: none; padding: 0; display: flex; gap: 20px;">
-          <li style="display: flex; align-items: center;">
-            <span style="display: inline-block; width: 20px; height: 20px; background-color: #FF0000; margin-right: 10px;"></span>
-            <span style="font-size: 18px; color: #444;">Cierre vial severo</span>
-          </li>
-          <li style="display: flex; align-items: center;">
-            <span style="display: inline-block; width: 20px; height: 20px; background-color: #FFA500; margin-right: 10px;"></span>
-            <span style="font-size: 18px; color: #444;">Cierre vial moderado</span>
-          </li>
-          <li style="display: flex; align-items: center;">
-            <span style="display: inline-block; width: 20px; height: 20px; background-color: #FFFF00; margin-right: 10px;"></span>
-            <span style="font-size: 18px; color: #444;">Cierre vial leve</span>
-          </li>
-        </ul>
-      </div>
+    <div>
+      <h1>Dashboard con Google Maps</h1>
+      <div
+        ref={(el) => (mapContainer = el)}
+        style="height: 600px; width: 100%; border: 1px solid #ccc;"
+      ></div>
     </div>
   );
-}
+};
 
-export default MapComponentWithChart;
+export default DashboardComponentWithGoogleMaps;

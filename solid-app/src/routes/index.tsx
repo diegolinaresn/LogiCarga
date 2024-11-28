@@ -1,134 +1,129 @@
 import { createSignal, onMount } from "solid-js";
-import { isLoggedIn, logout } from "../components/authstore";
+import { isLoggedIn } from "../components/authstore";
+import { getSectorLosses } from "../utils/api.js";
+import Chart from "chart.js/auto";
 import MapComponentWithChart from "../components/MapaDashboard";
-import GraficoPerdidas from "../components/GraficoPerdidas";
+import GraficoPerdidas from "~/components/GraficoPerdidas";
 
-// Gráfico de Líneas con Puntos y Barras
+// Tipado para los datos de pérdidas económicas
+interface SectorLoss {
+  sector: string;
+  total_loss: number;
+}
+
+// Gráfico de Líneas con Puntos y Barras (Datos Reales)
 const LineChartWithBars = () => {
-  const data = [10, 15, 8, 12, 18, 20, 25, 5, 14, 30]; // Datos de ejemplo
-  const labels = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct"]; // Meses
-  const maxDataValue = Math.max(...data); // Valor máximo para normalizar
-  const barWidth = 40; // Ancho de las barras
+  const [sectorLosses, setSectorLosses] = createSignal<SectorLoss[]>([]);
+
+  onMount(async () => {
+    try {
+      const data = await getSectorLosses();
+      if (data?.sector_losses) {
+        setSectorLosses(data.sector_losses);
+        renderChart(data.sector_losses);
+      } else {
+        console.error("No se encontraron datos de pérdidas económicas por sector.");
+      }
+    } catch (error) {
+      console.error("Error al obtener datos de pérdidas económicas por sector:", error);
+    }
+  });
+
+  const renderChart = (data: SectorLoss[]) => {
+    const labels = data.map((item) => item.sector);
+    const avgLosses = data.map((item) => item.total_loss);
+
+    const ctx = document.getElementById("lineChartWithBars") as HTMLCanvasElement;
+
+    new Chart(ctx.getContext("2d")!, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Pérdidas Económicas por Sector (USD)",
+            data: avgLosses,
+            backgroundColor: "rgba(75,192,192,0.7)",
+            borderColor: "rgba(75,192,192,1)",
+            fill: false,
+            tension: 0.4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+          title: { display: true, text: "Pérdidas Económicas por Sector" },
+        },
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  };
 
   return (
-    <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
-      <h2 class="text-2xl text-sky-700 uppercase my-4 font-bold">Tiempos de Entrega Promedio</h2>
-      <div
-        style="
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          height: 250px;
-          width: 100%;
-          max-width: 600px;
-          position: relative;
-          border-left: 2px solid black;
-          border-bottom: 2px solid black;
-        "
-      >
-        {/* Barras */}
-        <div style="display: flex; align-items: flex-end; height: 100%; width: 100%; position: absolute;">
-          {data.map((value, index) => (
-            <div
-              style={{
-                height: `${(value / maxDataValue) * 100}%`,
-                width: `${barWidth}px`,
-                "background-color": "rgba(75,192,192,0.7)",
-                margin: "0 10px",
-                "border-radius": "4px",
-              }}
-            ></div>
-          ))}
-        </div>
-
-        {/* Línea de datos */}
-        <svg
-          style="position: absolute; height: 100%; width: 100%;"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polyline
-            points={data
-              .map(
-                (value, index) =>
-                  `${(index / (data.length - 1)) * 100}%,${
-                    100 - (value / maxDataValue) * 100
-                  }%`
-              )
-              .join(" ")}
-            fill="none"
-            stroke="rgba(75,192,192,1)"
-            stroke-width="2"
-          />
-        </svg>
-
-        {/* Puntos */}
-        <svg
-          style="position: absolute; height: 100%; width: 100%;"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {data.map((value, index) => (
-            <circle
-              cx={`${(index / (data.length - 1)) * 100}%`}
-              cy={`${100 - (value / maxDataValue) * 100}%`}
-              r="5"
-              fill="rgba(75,192,192,1)"
-            />
-          ))}
-        </svg>
-      </div>
-
-      {/* Etiquetas del Eje X */}
-      <div style="display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin-top: 10px;">
-        {labels.map((label) => (
-          <span style="flex: 1; text-align: center; font-size: 14px; font-family: 'Poppins', sans-serif;">
-            {label}
-          </span>
-        ))}
-      </div>
+    <div style={{ width: "600px", margin: "auto" }}>
+      <canvas id="lineChartWithBars"></canvas>
     </div>
   );
 };
 
-// Gráfico de Barras (Costos de Transporte)
+// Gráfico de Barras (Datos Reales de Costos de Transporte)
 const SimpleBarChart = () => {
-  const data = [2000, 2500, 1800, 2200];
-  const labels = ["Ruta 1", "Ruta 2", "Ruta 3", "Ruta 4"];
-  const maxDataValue = Math.max(...data);
+  const [sectorLosses, setSectorLosses] = createSignal<SectorLoss[]>([]);
+
+  onMount(async () => {
+    try {
+      const data = await getSectorLosses();
+      if (data?.sector_losses) {
+        setSectorLosses(data.sector_losses);
+        renderBarChart(data.sector_losses);
+      } else {
+        console.error("No se encontraron datos de pérdidas económicas por sector.");
+      }
+    } catch (error) {
+      console.error("Error al obtener datos de pérdidas económicas por sector:", error);
+    }
+  });
+
+  const renderBarChart = (data: SectorLoss[]) => {
+    const labels = data.map((item) => item.sector);
+    const losses = data.map((item) => item.total_loss);
+
+    const ctx = document.getElementById("simpleBarChart") as HTMLCanvasElement;
+
+    new Chart(ctx.getContext("2d")!, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Pérdidas Económicas por Sector (USD)",
+            data: losses,
+            backgroundColor: "rgba(54, 162, 235, 0.7)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+          title: { display: true, text: "Pérdidas Económicas por Sector" },
+        },
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  };
 
   return (
-    <div style="display: flex; flex-direction: column; align-items: center; margin: 20px;">
-      <h2 class="text-2xl text-sky-700 uppercase my-4 font-bold">Costos de Transporte</h2>
-      <div
-        style="
-          display: flex;
-          align-items: flex-end;
-          height: 250px;
-          width: 100%;
-          max-width: 600px;
-          border-left: 2px solid black;
-          border-bottom: 2px solid black;
-        "
-      >
-        {data.map((value, index) => (
-          <div
-            style={{
-              flex: 1,
-              height: `${(value / maxDataValue) * 100}%`,
-              "background-color": "rgba(75,192,192,0.7)",
-              margin: "0 5px",
-            }}
-          ></div>
-        ))}
-      </div>
-
-      {/* Etiquetas del Eje X */}
-      <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px;">
-        {labels.map((label) => (
-          <span style="flex: 1; text-align: center; font-size: 14px; font-family: 'Poppins', sans-serif;">
-            {label}
-          </span>
-        ))}
-      </div>
+    <div style={{ width: "600px", margin: "auto" }}>
+      <canvas id="simpleBarChart"></canvas>
     </div>
   );
 };
@@ -144,16 +139,13 @@ const PrivateDashboard = () => {
           <LineChartWithBars />
         </div>
         <div class="bg-white p-4 rounded-lg shadow-md">
-          <SimpleBarChart />
+          <GraficoPerdidas />
         </div>
-        
       </div>
       <div class="bg-white p-4 rounded-lg shadow-md mt-8">
         <h2 class="text-2xl text-sky-700 uppercase my-4 font-bold">Mapa de Rutas Optimizadas</h2>
         <MapComponentWithChart />
       </div>
-
-      
     </main>
   );
 };
@@ -167,14 +159,14 @@ const PublicDashboard = () => {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div class="bg-white p-4 rounded-lg shadow-md">
           <h2 class="text-2xl text-sky-700 uppercase my-4 font-bold">Mapa de Rutas y Cierres Viales</h2>
-          <div style="height: 50%;">
+          <div style={{ height: "50%" }}>
             <MapComponentWithChart />
           </div>
         </div>
         <div class="bg-white p-4 rounded-lg shadow-md">
           <h2 class="text-2xl text-sky-700 uppercase my-4 font-bold">Gráfico de Barras de Pérdidas Económicas</h2>
-          <div style="height: 50%;">
-            <GraficoPerdidas />
+          <div style={{ height: "50%" }}>
+            <SimpleBarChart />
           </div>
         </div>
       </div>

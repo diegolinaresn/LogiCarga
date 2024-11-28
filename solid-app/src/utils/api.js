@@ -1,4 +1,4 @@
-const IP = '34.31.197.187'; //Esta se cambia cada q se prende la instancia
+const IP = '34.57.17.229'; //Esta se cambia cada q se prende la instancia
 
 // CARGAS /////////////////////////////////////////////////////////////////////////////////
 const deleteCarga = async (codigoCargue) => {
@@ -211,6 +211,26 @@ const getTramos = async () => {
     }
 };
 
+const getTramosAll = async () => {
+    try {
+        const response = await fetch(`http://${IP}:5001/map/tramosAll`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error al obtener los tramos: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error al obtener los tramos con detalles:", error);
+        return null;
+    }
+};
+
+export { getTramosAll };
+
 const getVias = async (tramo_id) => {
     try {
         const response = await fetch(`http://${IP}:5001/map/vias?tramo_id=${tramo_id}`, { method: 'GET' });
@@ -245,6 +265,24 @@ const getEfficiencyPublic = async () => {
     }
 }
 
+const getSectorLosses = async () => {
+    try {
+        const response = await fetch(`http://${IP}:5010/analytics/sector_losses`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al obtener las pérdidas económicas por sector');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error al obtener los datos del backend:', error);
+    }
+};
+
+
 const getEconomicLossPublic = async () => {
     try {
         const response = await fetch(`http://${IP}:5010/analytics/economic_loss`, {
@@ -257,6 +295,23 @@ const getEconomicLossPublic = async () => {
         console.error('Error al obtener los datos del backend:', error);
     }
 }
+
+// ECONOMIC LOSS (ALL SECTORS) //////////////////////////////////////////////////////////////////////////
+const getEconomicLossAll = async () => {
+    try {
+        const response = await fetch(`http://${IP}:5010/analytics/economic_loss_all`, {
+            method: 'GET'
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error al obtener las pérdidas económicas:', error);
+    }
+};
+
+
+
 
 const getRiskAnalysisPublic = async () => {
     try {
@@ -362,5 +417,5 @@ export {
     getTramos, getVias, getRuta,
     getEfficiencyPublic, getEconomicLossPublic, getRiskAnalysisPublic, getVisualizationPublic,
     getEfficiencyPrivate, getEconomicLossPrivate, getRiskAnalysisPrivate,
-    login, session,
+    login, session, getSectorLosses, getEconomicLossAll
 };

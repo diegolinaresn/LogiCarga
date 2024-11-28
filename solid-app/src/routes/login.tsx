@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { login, session } from "../utils/api"; // Importa las funciones desde tu archivo api.js
+import { login, session } from "../utils/api.js"; // Importa las funciones desde tu archivo api.js
 import { login as updateAuthStore } from "../components/authstore"; // Actualiza el estado global de autenticación
 
 export default function Login() {
