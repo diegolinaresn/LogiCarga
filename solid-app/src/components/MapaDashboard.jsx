@@ -296,8 +296,6 @@ const MapComponentWithChart = () => {
 
   return (
     <div style="font-family: 'Poppins', sans-serif;">
-      <h1>Mapa y Vías Afectadas</h1>
-      
       <div style="display: flex; gap: 20px; flex-wrap: wrap;">
         <div
           id="map"
@@ -306,7 +304,7 @@ const MapComponentWithChart = () => {
         ></div>
       </div>
       
-      <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+      <div>
         <h2 style="font-size: 24px; font-weight: bold; color: #0056b3; margin-bottom: 20px;">Simbología</h2>
         <ul style="list-style: none; padding: 0; display: flex; gap: 20px;">
           <li style="display: flex; align-items: center;">

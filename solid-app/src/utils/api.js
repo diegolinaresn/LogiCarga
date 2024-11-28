@@ -1,65 +1,103 @@
 const IP = '34.31.197.187'; //Esta se cambia cada q se prende la instancia
 
 // CARGAS /////////////////////////////////////////////////////////////////////////////////
-const deleteCarga = async (CODIGO_CARGUE) => {
+const deleteCarga = async (codigoCargue) => {
     try {
-        const response = await fetch(`http://${IP}:6008/api/cargas/${CODIGO_CARGUE}`, {
-            method: 'DELETE'
+        const response = await fetch(`http://${IP}:6008/api/cargas/${codigoCargue}`, {
+            method: "DELETE",
         });
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error al obtener los datos del backend:', error);
-    }
-}
-
-const getCargas = async (limit, offset, search) => {
-    try {
-        const url = `http://${IP}:6010/api/cargas?limit=${limit}&offset=${offset}`;
-        if (search) {
-            url += `&search=${search}`;
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Error eliminando el cargue.");
         }
-        
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error al eliminar el cargue:", error);
+        throw error;
+    }
+};
+
+
+
+
+const getCargas = async ({ limit = 7, offset = 0, search = "" }) => {
+    try {
+        const url = new URL(`http://${IP}:6010/api/cargas`);
+        url.searchParams.append("limit", limit);
+        url.searchParams.append("offset", offset);
+        if (search) {
+            url.searchParams.append("search", search);
+        }
+
+        const response = await fetch(url.toString(), { method: "GET" });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Error al obtener las cargas.");
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error en getCargas:", error);
+        throw error;
+    }
+};
+
+
+
+const postCarga = async (cargues) => {
+    try {
+      const response = await fetch(`http://${IP}:6001/api/cargas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cargues }), // cargues debe ser un array
+      });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error al crear cargues.");
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error("Error en postCarga:", error);
+      throw error;
+    }
+  };
+  
+
+  const putCarga = async (codigoCargue, updatedCargueData) => {
+    const url = `http://${IP}:6005/api/cargas`;
+
+    try {
         const response = await fetch(url, {
-            method: 'GET',
-        });
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error al obtener los datos del backend:', error);
-    }
-}
-
-const postCarga = async () => {
-    try {
-        const response = await fetch(`http://${IP}:6001/api/cargas`, {
-            method: 'POST',
+            method: "PUT",
             headers: {
-                'Content-Type': 'application/json'
-            }
+                "Content-Type": "application/json", // Asegúrate de que sea exactamente así
+            },
+            body: JSON.stringify({
+                cargues: [updatedCargueData], // Enviar la lista con un único elemento
+            }),
         });
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error al obtener los datos del backend:', error);
-    }
-}
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Error al actualizar el cargue");
+        }
 
-const putCarga = async (CODIGO_CARGUE) => {
-    try {
-        const response = await fetch(`http://${IP}:6005/api/cargas/${CODIGO_CARGUE}`, {
-            method: 'PUT'
-        });
-
-        const data = await response.json();
-        return data;
+        return await response.json(); // Devuelve el mensaje o datos del servidor
     } catch (error) {
-        console.error('Error al obtener los datos del backend:', error);
+        console.error("Error en putCarga:", error);
+        throw error;
     }
-}
+};
+
+
 
 // CLIENTES /////////////////////////////////////////////////////////////////////////////////
 const deleteCliente = async (idCliente) => {

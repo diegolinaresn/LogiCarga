@@ -1,68 +1,44 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { login, logout } from "../components/authstore";
-
-// Función para obtener los datos del usuario
-const fetchUserData = async (token: string) => {
-  try {
-    const response = await fetch("http://127.0.0.1:5005/users/me", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Error al obtener datos del usuario");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (err) {
-    console.error("Error en fetchUserData:", err);
-    return null;
-  }
-};
+import { login, session } from "../utils/api"; // Importa las funciones desde tu archivo api.js
+import { login as updateAuthStore } from "../components/authstore"; // Actualiza el estado global de autenticación
 
 export default function Login() {
   const [email, setEmail] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [error, setError] = createSignal("");
-  const [isLoading, setIsLoading] = createSignal(false); // Estado para manejar el loading
+  const [isLoading, setIsLoading] = createSignal(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: Event) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:5005/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          username: email(),
-          password: password(),
-        }),
-      });
+      // Realiza la llamada de login usando la función importada
+      const loginData = await login(email(), password());
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Error al iniciar sesión");
+      if (!loginData || !loginData.access_token) {
+        throw new Error("Credenciales incorrectas o respuesta inválida del servidor.");
       }
 
-      const data = await response.json();
-      const userData = await fetchUserData(data.access_token);
+      // Obtén los datos del usuario usando la función `session`
+      const userData = await session(loginData.access_token);
 
       if (!userData) {
-        throw new Error("Error al obtener los datos del usuario");
+        throw new Error("Error al obtener los datos del usuario.");
       }
 
-      login(data.access_token, userData); // Actualiza el estado global
-      navigate("/"); // Redirige al inicio
-    } catch (err: any) {
-      setError(err.message || "Error inesperado al iniciar sesión");
+      // Actualiza el estado global de autenticación
+      updateAuthStore(loginData.access_token, userData);
+
+      // Redirige al usuario a la página principal
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Ocurrió un error inesperado.");
     } finally {
-      setIsLoading(false); // Detener el loading
+      setIsLoading(false);
     }
   };
 
@@ -106,4 +82,3 @@ export default function Login() {
     </main>
   );
 }
-  
